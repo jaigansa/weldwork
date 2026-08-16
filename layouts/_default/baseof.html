@@ -263,13 +263,13 @@
                 </div>
 
                 <div class="worker-contact-actions">
-                  <a href="tel:{{ .Params.phone_clean | default "919840562997" }}" class="worker-btn btn-call" aria-label="Call {{ .Title }}">
+                  <a href="tel:{{ .Params.phone_clean | default `919840562997` }}" class="worker-btn btn-call" aria-label="Call {{ .Title }}">
                     <i data-lucide="phone" class="btn-icon"></i>
                     <span>Call</span>
                   </a>
-                  <a href="https://wa.me/{{ .Params.whatsapp | default "919840562997" }}" target="_blank" rel="noopener" class="worker-btn btn-whatsapp" aria-label="WhatsApp {{ .Title }}">
+                  <a href="https://wa.me/{{ .Params.whatsapp | default `919840562997` }}" target="_blank" rel="noopener" class="worker-btn btn-whatsapp" aria-label="Chat with {{ .Title }}">
                     <i data-lucide="message-circle" class="btn-icon"></i>
-                    <span>WhatsApp</span>
+                    <span>Chat</span>
                   </a>
                 </div>
               </div>
