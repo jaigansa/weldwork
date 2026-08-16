@@ -1,0 +1,68 @@
+backend:
+  name: github
+  repo: your-github-username/weldwork
+  branch: main
+  base_url: https://weldwork.in
+  auth_endpoint: api/auth
+
+media_folder: "static/images"
+public_folder: "/images"
+
+collections:
+  - name: "company"
+    label: "Shops & Company Facilities"
+    folder: "content/company"
+    format: "frontmatter"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Shop Name", name: "title", widget: "string" }
+      - { label: "Tagline / Specialization", name: "tagline", widget: "string" }
+      - { label: "Display Order / Weight", name: "weight", widget: "number", default: 1, value_type: "int" }
+      - { label: "Logo", name: "logo", widget: "image" }
+      - { label: "Feature Background Image", name: "bg_image", widget: "image" }
+      - { label: "Opening Hours", name: "opening_hours", widget: "string" }
+      - { label: "Phone Display", name: "phone", widget: "string" }
+      - { label: "Phone Clean (Digits)", name: "phone_clean", widget: "string" }
+      - { label: "WhatsApp Number (Digits)", name: "whatsapp", widget: "string" }
+      - { label: "Email", name: "email", widget: "string" }
+      - { label: "Workshop Address", name: "address", widget: "string" }
+      - { label: "About Shop Description", name: "body", widget: "markdown" }
+
+  - name: "catalogue"
+    label: "Product & Service Catalogue"
+    folder: "content/catalogue"
+    format: "frontmatter"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Category", name: "category", widget: "string" }
+      - { label: "Weight", name: "weight", widget: "number", default: 1, value_type: "int" }
+      - { label: "Rate Amount", name: "rate", widget: "string" }
+      - { label: "Rate Type", name: "rate_type", widget: "string" }
+      - { label: "Rate Effective Date", name: "rate_date", widget: "string" }
+      - { label: "Estimated Lead Time", name: "lead_time", widget: "string" }
+      - { label: "Materials Supported", name: "materials", widget: "list", field: { label: "Material", name: "material", widget: "string" } }
+      - { label: "Certifications", name: "certifications", widget: "list", field: { label: "Certification", name: "cert", widget: "string" } }
+      - { label: "Assigned Team (Team Slugs)", name: "teams", widget: "list", field: { label: "Team Member Slug (e.g. jai-ganesh)", name: "team", widget: "string" } }
+      - { label: "Images Gallery", name: "images", widget: "list", field: { label: "Image Path", name: "image", widget: "image" } }
+      - { label: "Full Description", name: "body", widget: "markdown" }
+
+  - name: "teams"
+    label: "Teams & Craftsmen"
+    folder: "content/teams"
+    format: "frontmatter"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Name", name: "title", widget: "string" }
+      - { label: "Role", name: "role", widget: "string" }
+      - { label: "Photo", name: "photo", widget: "image" }
+      - { label: "Experience", name: "experience", widget: "string" }
+      - { label: "Skills / What they do", name: "skills", widget: "string" }
+      - { label: "Phone", name: "phone", widget: "string" }
+      - { label: "Phone Digits", name: "phone_clean", widget: "string" }
+      - { label: "WhatsApp", name: "whatsapp", widget: "string" }
+      - { label: "Email", name: "email", widget: "string" }
+      - { label: "Bio", name: "body", widget: "markdown" }

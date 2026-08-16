@@ -1,0 +1,10 @@
+baseURL = "https://weldwork.in/"
+locale = "en"
+title = "WeldWork"
+theme = []
+
+[params]
+  description = "Premium Metal Fabrication Works & Industrial Welding Solutions"
+  web3forms_access_key = "YOUR_WEB3FORMS_ACCESS_KEY"
+  turnstile_sitekey = "1x00000000000000000000AA"
+  cloudflare_beacon_token = "YOUR_CLOUDFLARE_BEACON_TOKEN"
