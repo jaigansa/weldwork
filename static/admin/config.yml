@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: your-github-username/weldwork
+  repo: jaigansa/weldwork
   branch: main
   base_url: https://weldwork.in
   auth_endpoint: api/auth

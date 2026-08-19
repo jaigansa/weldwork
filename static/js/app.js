@@ -48,9 +48,12 @@ function switchScreen(screenKey) {
         const container = el.querySelector('.screen-scroll-container');
         if (container) {
           checkScrollPosition(container.scrollTop);
+          if (container._indicator) container._indicator.classList.add('visible');
         }
       } else {
         el.classList.remove('active');
+        const container = el.querySelector('.screen-scroll-container');
+        if (container && container._indicator) container._indicator.classList.remove('visible');
       }
     }
   });
@@ -112,9 +115,21 @@ function initRouting() {
   }
 
   document.querySelectorAll('[data-team-trigger], [data-worker-trigger]').forEach(tag => {
-    tag.addEventListener('click', () => {
-      history.pushState({ screen: 'teams' }, '', screens.teams.path);
-      switchScreen('teams');
+    tag.addEventListener('click', (e) => {
+      const teamMembersData = tag.dataset.teamMembers;
+      if (teamMembersData) {
+        e.stopPropagation();
+        const itemTitle = tag.dataset.itemTitle || '';
+        try {
+          const teamMembers = JSON.parse(teamMembersData);
+          openTeamSelector(teamMembers, itemTitle);
+        } catch (err) {
+          console.error('Failed to parse team members data:', err);
+        }
+      } else {
+        history.pushState({ screen: 'teams' }, '', screens.teams.path);
+        switchScreen('teams');
+      }
     });
   });
 
@@ -237,8 +252,9 @@ function handleTouchEnd(e) {
 }
 
 function initPhotoAlbum() {
-  document.querySelectorAll('.product-feature-media').forEach(media => {
-    media.addEventListener('click', () => {
+  document.querySelectorAll('.product-feature-media, .catalogue-album-badge, .compact-btn.btn-album').forEach(media => {
+    media.addEventListener('click', (e) => {
+      e.stopPropagation();
       try {
         const images = JSON.parse(media.dataset.albumImages || '[]');
         const title = media.dataset.albumTitle;
@@ -274,10 +290,18 @@ function initPhotoAlbum() {
       if (detailsDrawer && !detailsDrawer.classList.contains('hidden')) {
         closeDetailsDrawer();
       }
+      const contactModal = document.getElementById('contact-modal');
+      if (contactModal && !contactModal.classList.contains('hidden')) {
+        contactModal.classList.add('hidden');
+        contactModal.setAttribute('aria-hidden', 'true');
+      }
     }
     if (photoLightbox && !photoLightbox.classList.contains('hidden')) {
-      if (e.key === 'ArrowRight') nextAlbumPhoto();
-      if (e.key === 'ArrowLeft') prevAlbumPhoto();
+      const activeTag = document.activeElement ? document.activeElement.tagName : '';
+      if (activeTag !== 'INPUT' && activeTag !== 'TEXTAREA' && activeTag !== 'SELECT') {
+        if (e.key === 'ArrowRight') nextAlbumPhoto();
+        if (e.key === 'ArrowLeft') prevAlbumPhoto();
+      }
     }
   });
 }
@@ -334,8 +358,9 @@ function closeDetailsDrawer() {
 }
 
 function initDetailsDrawer() {
-  document.querySelectorAll('.open-details-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+  document.querySelectorAll('.open-details-btn, .catalogue-info-btn, .btn-info').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       openDetailsDrawer(btn);
     });
   });
@@ -350,6 +375,355 @@ function initDetailsDrawer() {
   }
 }
 
+function initContactModal() {
+  const openBtn = document.getElementById('open-inquiry-btn');
+  const modal = document.getElementById('contact-modal');
+  const closeBtn = document.getElementById('close-modal');
+  const form = document.getElementById('inquiry-form');
+  const feedback = document.getElementById('form-feedback');
+  const submitBtn = document.getElementById('submit-btn');
+
+  if (openBtn && modal) {
+    openBtn.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
+
+      if (typeof turnstile !== 'undefined' && !modal.dataset.turnstileRendered) {
+        const sitekey = modal.querySelector('input[name="access_key"]')?.value;
+        const widgetEl = document.getElementById('turnstile-widget');
+        if (widgetEl && window.turnstileSitekey) {
+          window.turnstile.render(widgetEl, {
+            sitekey: window.turnstileSitekey,
+            theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
+          });
+          modal.dataset.turnstileRendered = 'true';
+        }
+      }
+    });
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+  }
+
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+      }
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          if (feedback) {
+            feedback.textContent = 'Message sent successfully! We\'ll get back to you shortly.';
+            feedback.className = 'form-feedback success';
+            feedback.classList.remove('hidden');
+          }
+          form.reset();
+          setTimeout(() => {
+            if (modal) {
+              modal.classList.add('hidden');
+              modal.setAttribute('aria-hidden', 'true');
+            }
+            if (feedback) feedback.classList.add('hidden');
+          }, 3000);
+        } else {
+          throw new Error(result.message || 'Submission failed');
+        }
+      } catch (err) {
+        if (feedback) {
+          feedback.textContent = 'Something went wrong. Please try again or call us directly.';
+          feedback.className = 'form-feedback error';
+          feedback.classList.remove('hidden');
+        }
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send Message';
+        }
+      }
+    });
+  }
+}
+
+function initShortsCards() {
+  if (typeof Hammer === 'undefined') return;
+
+  document.querySelectorAll('.shorts-scroll').forEach(container => {
+    const cards = container.querySelectorAll('.shorts-card');
+    if (!cards.length) return;
+
+    const hammer = new Hammer.Manager(container, {
+      recognizers: [
+        [Hammer.Swipe, { direction: Hammer.DIRECTION_VERTICAL, threshold: 30, velocity: 0.3 }]
+      ]
+    });
+
+    hammer.on('swipeup', () => {
+      scrollToNextCard(container, cards);
+    });
+
+    hammer.on('swipedown', () => {
+      scrollToPrevCard(container, cards);
+    });
+
+    let scrollTimeout;
+    container.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        updateActiveCardIndicator(container, cards);
+      }, 80);
+    }, { passive: true });
+
+    createIndicatorDots(container, cards);
+    updateActiveCardIndicator(container, cards);
+  });
+}
+
+function scrollToNextCard(container, cards) {
+  const scrollTop = container.scrollTop;
+  for (let i = 0; i < cards.length; i++) {
+    if (cards[i].offsetTop > scrollTop + 10) {
+      cards[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      break;
+    }
+  }
+}
+
+function scrollToPrevCard(container, cards) {
+  const scrollTop = container.scrollTop;
+  for (let i = cards.length - 1; i >= 0; i--) {
+    if (cards[i].offsetTop < scrollTop - 10) {
+      cards[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      break;
+    }
+  }
+}
+
+function createIndicatorDots(container, cards) {
+  const indicator = document.createElement('div');
+  indicator.className = 'shorts-indicator';
+  indicator.setAttribute('aria-hidden', 'true');
+
+  cards.forEach((_, idx) => {
+    const dot = document.createElement('div');
+    dot.className = 'shorts-dot';
+    if (idx === 0) dot.classList.add('active');
+    indicator.appendChild(dot);
+  });
+
+  document.querySelector('.app-container').appendChild(indicator);
+
+  const screenId = container.closest('.screen-view')?.id;
+  container._indicator = indicator;
+  container._screenId = screenId;
+}
+
+function updateActiveCardIndicator(container, cards) {
+  if (!container._indicator) return;
+
+  const scrollTop = container.scrollTop;
+  let activeIdx = 0;
+  let minDist = Infinity;
+
+  cards.forEach((card, idx) => {
+    const dist = Math.abs(card.offsetTop - scrollTop);
+    if (dist < minDist) {
+      minDist = dist;
+      activeIdx = idx;
+    }
+  });
+
+  const dots = container._indicator.querySelectorAll('.shorts-dot');
+  dots.forEach((dot, idx) => {
+    dot.classList.toggle('active', idx === activeIdx);
+  });
+
+  const isActive = document.querySelector('.screen-view.active')?.id === container._screenId;
+  container._indicator.classList.toggle('visible', isActive);
+}
+
+function initVideoFallback() {
+  document.querySelectorAll('.shop-card-video').forEach(video => {
+    const source = video.querySelector('source');
+    const fallback = video.previousElementSibling;
+
+    function showFallback() {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+      video.style.display = 'none';
+      video.style.zIndex = '-1';
+      if (fallback) {
+        fallback.style.opacity = '1';
+        fallback.style.zIndex = '0';
+      }
+    }
+
+    if (!source || !source.src) {
+      showFallback();
+      return;
+    }
+
+    video.addEventListener('error', showFallback);
+    source.addEventListener('error', showFallback);
+    video.addEventListener('loadeddata', () => {
+      video.classList.add('is-loaded');
+      if (fallback) fallback.style.opacity = '0';
+    });
+
+    setTimeout(() => {
+      if (video.readyState < 2) {
+        showFallback();
+      }
+    }, 3000);
+  });
+}
+
+function initHoursToggle() {
+  document.querySelectorAll('[data-hours-toggle]').forEach(box => {
+    box.addEventListener('click', (e) => {
+      e.stopPropagation();
+      box.classList.toggle('is-expanded');
+    });
+  });
+  document.querySelectorAll('[data-catalogue-toggle]').forEach(box => {
+    box.addEventListener('click', (e) => {
+      e.stopPropagation();
+      box.classList.toggle('is-expanded');
+    });
+  });
+}
+
+const teamSelectorModal = document.getElementById('team-selector-modal');
+const teamSelectorList = document.getElementById('team-selector-list');
+const teamSelectorItemTitle = document.getElementById('team-selector-item-title');
+const closeTeamSelectorBtn = document.getElementById('close-team-selector');
+
+function openTeamSelector(teamMembers, itemTitle) {
+  if (!teamSelectorModal || !teamSelectorList) return;
+  teamSelectorList.innerHTML = '';
+  
+  if (teamSelectorItemTitle && itemTitle) {
+    teamSelectorItemTitle.textContent = `Specialist for "${itemTitle}"`;
+  }
+  
+  teamMembers.forEach(member => {
+    const name = member.name || member.slug || 'Unknown';
+    const role = member.role || '';
+    const photo = member.photo || '/icons/icon-192.png';
+    const whatsapp = member.whatsapp || '919840562997';
+
+    const chatMsg = encodeURIComponent(`Hi ${name}, I need help with "${itemTitle}". `);
+    const chatUrl = `https://wa.me/${whatsapp}?text=${chatMsg}`;
+
+    const item = document.createElement('div');
+    item.className = 'team-selector-item';
+    
+    const img = document.createElement('img');
+    img.src = photo;
+    img.alt = name;
+    img.className = 'selector-avatar';
+    img.loading = 'lazy';
+    
+    const meta = document.createElement('div');
+    meta.className = 'selector-meta';
+    
+    const nameEl = document.createElement('div');
+    nameEl.className = 'selector-name';
+    nameEl.textContent = name;
+    
+    const roleEl = document.createElement('div');
+    roleEl.className = 'selector-role';
+    roleEl.textContent = role;
+    
+    meta.appendChild(nameEl);
+    meta.appendChild(roleEl);
+    
+    const actions = document.createElement('div');
+    actions.className = 'selector-actions';
+    
+    const chatLink = document.createElement('a');
+    chatLink.href = chatUrl;
+    chatLink.target = '_blank';
+    chatLink.rel = 'noopener';
+    chatLink.className = 'selector-chat';
+    chatLink.setAttribute('aria-label', `Chat with ${name}`);
+    chatLink.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>';
+    
+    actions.appendChild(chatLink);
+    
+    item.appendChild(img);
+    item.appendChild(meta);
+    item.appendChild(actions);
+    teamSelectorList.appendChild(item);
+  });
+
+  teamSelectorModal.classList.remove('hidden');
+  teamSelectorModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeTeamSelector() {
+  if (!teamSelectorModal) return;
+  teamSelectorModal.classList.add('hidden');
+  teamSelectorModal.setAttribute('aria-hidden', 'true');
+}
+
+if (closeTeamSelectorBtn) closeTeamSelectorBtn.addEventListener('click', closeTeamSelector);
+if (teamSelectorModal) {
+  teamSelectorModal.addEventListener('click', (e) => {
+    if (e.target === teamSelectorModal) closeTeamSelector();
+  });
+}
+
+function toggleWorkerInfo(cardIndex) {
+  const section = document.getElementById('screen-teams');
+  const card = section ? section.querySelector('[data-card-index="' + cardIndex + '"]') : null;
+  if (card) {
+    card.classList.toggle('worker-info-expanded');
+    const btn = card.querySelector('.worker-info-btn');
+    if (btn) {
+      btn.setAttribute('aria-expanded', card.classList.contains('worker-info-expanded'));
+    }
+  }
+}
+
+function initWorkerInfo() {
+  const workerCards = document.querySelectorAll('.worker-card.shorts-card');
+  workerCards.forEach((card) => {
+    const infoBtn = card.querySelector('.worker-info-btn');
+    if (infoBtn) {
+      infoBtn.setAttribute('aria-expanded', 'false');
+      const infoSection = card.querySelector('.worker-info');
+      if (infoSection) {
+        infoSection.style.visibility = '';
+        infoSection.style.opacity = '';
+      }
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   if (window.lucide && typeof window.lucide.createIcons === 'function') {
     window.lucide.createIcons();
@@ -359,4 +733,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollWatcher();
   initPhotoAlbum();
   initDetailsDrawer();
+  initContactModal();
+  initShortsCards();
+  initVideoFallback();
+  initHoursToggle();
+  initWorkerInfo();
 });

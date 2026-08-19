@@ -20,8 +20,10 @@ schedule:
 phone: "+91 98405 62997"
 phone_clean: "919840562997"
 whatsapp: "919840562997"
-email: "srijaiganeshindustry@gmail.com"
+email: "contact@weldwork.in"
 address: "Irumbuliyur, East Tambaram, Chennai - 600059"
+latitude: 12.9123
+longitude: 80.1079
 ---
 
 Operating out of Irumbuliyur, East Tambaram, SRI JAIGANESH INDUSTRY delivers end-to-end custom metal fabrication, heavy industrial welding, structural steel works, bespoke gates, safety handrails, and precision sheet metal fabrication for commercial, residential, and industrial clients.

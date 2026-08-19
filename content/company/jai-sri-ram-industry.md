@@ -20,8 +20,10 @@ schedule:
 phone: "+91 98416 85006"
 phone_clean: "919841685006"
 whatsapp: "919841685006"
-email: "jsrindustries@gmail.com"
+email: "contact@weldwork.in"
 address: "Kanchivakkam, Chennai"
+latitude: 12.8218
+longitude: 79.9738
 ---
 
 Specialists in commercial truck body building, flatbed trailers, tipper bodies, container modification, cabin repairs, and heavy chassis reinforcement in Kanchivakkam. Built with high-strength structural steel and heavy-gauge industrial components.

@@ -20,6 +20,8 @@
   <link rel="preconnect" href="https://static.cloudflareinsights.com">
   <link rel="preconnect" href="https://api.web3forms.com">
   
+  <script>window.turnstileSitekey = "{{ .Site.Params.turnstile_sitekey }}";</script>
+  
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js"
     data-cf-beacon='{"token": "{{ .Site.Params.cloudflare_beacon_token }}"}'></script>
 </head>
@@ -30,203 +32,185 @@
     <main class="app-content">
       <!-- Screen 1: Home / Shop Business Cards -->
       <section class="screen-view active" id="screen-home" data-path="/">
-        <div class="screen-scroll-container">
-          <div class="hero-section">
+        <div class="screen-scroll-container shorts-scroll">
+{{ if .Site.Params.home.show_hero }}
+          <div class="hero-section" style="background-image: url('{{ .Site.Params.home.background_image | default "/images/shop-bg.jpg" | absURL }}');">
             <div class="logo-badge">W</div>
             <h1>{{ .Site.Title }}</h1>
             <p class="hero-tagline">{{ .Site.Params.description }}</p>
           </div>
+{{ end }}
 
           <!-- Multiple Shop Business Cards with Compact Actions -->
           <div class="shops-container">
-            {{ range sort (where .Site.RegularPages "Section" "company") "Params.weight" }}
-            <div class="shop-business-card" style="background-image: linear-gradient(180deg, rgba(11, 15, 25, 0.78) 0%, rgba(11, 15, 25, 0.96) 100%), url('{{ .Params.bg_image | default `/images/shop-bg.jpg` }}');">
-              <div class="card-glass-header">
-                <img src="{{ .Params.logo | default `/icons/icon-192.png` }}" alt="{{ .Params.title }} Logo" class="shop-card-logo">
-                <div class="shop-card-titles">
-                  <h2>{{ .Params.title }}</h2>
-                  <p class="shop-tagline">{{ .Params.tagline }}</p>
-                </div>
-              </div>
+            {{ range $idx, $card := sort (where .Site.RegularPages "Section" "company") "Params.weight" }}
+            <div class="shop-business-card shorts-card" data-card-index="{{ $idx }}">
+              <div class="shop-card-bg" style="background-image: url('{{ .Params.bg_image | default "/images/shop-bg.jpg" | absURL }}');"></div>
+              {{ if .Params.bg_video }}
+              <video class="shop-card-video" autoplay muted loop playsinline>
+                <source src="{{ .Params.bg_video }}" type="video/mp4">
+              </video>
+              {{ end }}
 
-              <!-- Compact Daily Hours & Holiday Schedule -->
-              <div class="shop-hours-box">
-                <div class="shop-hours-title">
-                  <i data-lucide="clock" class="hours-box-icon"></i>
-                  <span>Working Hours & Schedule</span>
-                </div>
-                <div class="shop-hours-grid">
-                  {{ if .Params.schedule }}
-                    {{ range .Params.schedule }}
-                    <div class="hours-row {{ if eq .status `Holiday` }}is-holiday{{ else if eq .status `Half Day` }}is-halfday{{ end }}">
-                      <span class="hours-days">{{ .days }}</span>
-                      <span class="hours-time">{{ .hours }}</span>
-                    </div>
-                    {{ end }}
-                  {{ else }}
-                    <div class="hours-row">
-                      <span class="hours-days">Mon – Fri</span>
-                      <span class="hours-time">8:00 AM – 8:00 PM</span>
-                    </div>
-                    <div class="hours-row is-halfday">
-                      <span class="hours-days">Sunday</span>
-                      <span class="hours-time">9:00 AM – 1:30 PM</span>
-                    </div>
-                    <div class="hours-row is-holiday">
-                      <span class="hours-days">Holidays</span>
-                      <span class="hours-time">Emergency Support</span>
-                    </div>
-                  {{ end }}
-                </div>
-              </div>
-
-              <!-- Compact 4-Action Button Bar -->
+              <!-- Compact 4-Action Button Bar (Right Side) -->
+              {{ if .Site.Params.home.show_action_buttons }}
               <div class="shop-compact-actions">
+                {{ if .Site.Params.home.show_call_button }}
                 <a href="tel:{{ .Params.phone_clean }}" class="compact-btn btn-call" aria-label="Call {{ .Params.title }}">
                   <i data-lucide="phone" class="compact-btn-icon"></i>
                   <span>Call</span>
                 </a>
+                {{ end }}
                 
-                <a href="https://wa.me/{{ .Params.whatsapp }}" target="_blank" rel="noopener" class="compact-btn btn-whatsapp" aria-label="WhatsApp {{ .Params.title }}">
+                {{ if .Site.Params.home.show_whatsapp_button }}
+                <a href="https://wa.me/{{ .Params.whatsapp }}" target="_blank" rel="noopener" class="compact-btn btn-whatsapp" aria-label="Chat with {{ .Params.title }}">
                   <i data-lucide="message-circle" class="compact-btn-icon"></i>
-                  <span>WhatsApp</span>
+                  <span>Chat</span>
                 </a>
+                {{ end }}
                 
-                <a href="https://www.google.com/maps/search/?api=1&query={{ .Params.address | urlquery }}" target="_blank" rel="noopener" class="compact-btn btn-map" aria-label="Open Location Map">
+                {{ if .Site.Params.home.show_location_button }}
+                <a href="https://www.google.com/maps?q={{ .Params.latitude }},{{ .Params.longitude }}" target="_blank" rel="noopener" class="compact-btn btn-map" aria-label="Open Location Map">
                   <i data-lucide="map-pin" class="compact-btn-icon"></i>
-                  <span>Location</span>
+                  <span>Map</span>
                 </a>
+                {{ end }}
                 
+                {{ if .Site.Params.home.show_email_button }}
                 <a href="mailto:{{ .Params.email }}" class="compact-btn btn-email" aria-label="Send Email">
                   <i data-lucide="mail" class="compact-btn-icon"></i>
                   <span>Email</span>
                 </a>
+                {{ end }}
+              </div>
+              {{ end }}
+
+              <!-- Shop Info (Bottom) -->
+              <div class="shop-info-bottom">
+                <div class="card-glass-header">
+                  <img src="{{ .Params.logo | default "/icons/icon-192.png" | absURL }}" alt="{{ .Params.title }} Logo" class="shop-card-logo">
+                  <div class="shop-card-titles">
+                    <h2>{{ .Params.title }}</h2>
+                    <p class="shop-tagline">{{ .Params.tagline }}</p>
+                  </div>
+                </div>
+
+                <!-- Working Hours (Collapsible) -->
+                {{ if .Site.Params.home.show_shop_hours }}
+                <div class="shop-hours-box" data-hours-toggle>
+                  <div class="shop-hours-summary">
+                    <div class="shop-hours-title">
+                      <i data-lucide="clock" class="hours-box-icon"></i>
+                      <span>Working Hours</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="hours-expand-icon"></i>
+                  </div>
+                  <div class="shop-hours-details">
+                    <div class="shop-hours-grid">
+                      {{ if .Params.schedule }}
+                        {{ range .Params.schedule }}
+                        <div class="hours-row {{ if eq .status `Holiday` }}is-holiday{{ else if eq .status `Half Day` }}is-halfday{{ end }}">
+                          <span class="hours-days">{{ .days }}</span>
+                          <span class="hours-time">{{ .hours }}</span>
+                        </div>
+                        {{ end }}
+                      {{ else }}
+                        <div class="hours-row">
+                          <span class="hours-days">Mon – Fri</span>
+                          <span class="hours-time">8:00 AM – 8:00 PM</span>
+                        </div>
+                        <div class="hours-row is-halfday">
+                          <span class="hours-days">Sunday</span>
+                          <span class="hours-time">9:00 AM – 1:30 PM</span>
+                        </div>
+                        <div class="hours-row is-holiday">
+                          <span class="hours-days">Holidays</span>
+                          <span class="hours-time">Emergency Support</span>
+                        </div>
+                      {{ end }}
+                    </div>
+                  </div>
+                </div>
+                {{ end }}
               </div>
             </div>
             {{ end }}
           </div>
 
+          {{ if .Site.Params.home.show_markdown_content }}
           <div class="markdown-content">
             {{ with .Site.GetPage "/" }}
               {{ .Content }}
             {{ end }}
           </div>
+          {{ end }}
         </div>
       </section>
 
       <!-- Screen 2: Product / Service Catalogue -->
       <section class="screen-view" id="screen-catalogue" data-path="/catalogue/">
-        <div class="screen-scroll-container">
-          <div class="section-header">
+        <div class="screen-scroll-container shorts-scroll">
+          {{ if .Site.Params.catalogue.show_section_header }}
+          <div class="section-header" style="padding: 20px 20px 0;">
             <h2>Product & Service Catalogue</h2>
             <p class="section-intro">Premium metal fabrication, fixed pricing, and verified master fabricators.</p>
           </div>
+          {{ end }}
           <div class="services-grid">
-            {{ range sort (where .Site.RegularPages "Section" "catalogue") "Params.weight" }}
-            <div class="service-card" id="card-{{ .File.TranslationBaseName }}">
+            {{ range $idx, $card := sort (where .Site.RegularPages "Section" "catalogue") "Params.weight" }}
+            <div class="service-card shorts-card" id="card-{{ .File.TranslationBaseName }}" data-card-index="{{ $idx }}">
               
-              <!-- Feature Image Header (Single Feature with Album Badge) -->
-              {{ if .Params.images }}
-              <div class="product-feature-media" 
-                   data-album-images='{{ jsonify .Params.images }}' 
-                   data-album-title="{{ .Title }}">
-                <img src="{{ index .Params.images 0 }}" alt="{{ .Title }}" class="feature-img" loading="lazy">
-                <div class="media-badge">
-                  <i data-lucide="camera" class="badge-icon"></i>
-                  <span>{{ len .Params.images }} Photos &bull; Tap to View Album</span>
-                </div>
-              </div>
+              <!-- Background Image -->
+              {{ if and .Params.images .Site.Params.catalogue.show_feature_images }}
+              <div class="catalogue-card-bg" style="background-image: url('{{ index .Params.images 0 | absURL }}');"></div>
               {{ end }}
 
-              <div class="card-top-meta">
-                <span class="category-chip">{{ .Params.category | default "Custom Metalwork" }}</span>
-                {{ if .Params.lead_time }}
-                <span class="lead-time-chip">
-                  <i data-lucide="clock-3" class="chip-icon"></i>
-                  {{ .Params.lead_time }}
-                </span>
+              <!-- Right Side Action Buttons -->
+              <div class="catalogue-compact-actions">
+                {{ if and .Params.images .Site.Params.catalogue.show_feature_images }}
+                <button class="compact-btn btn-album" 
+                   data-album-images='{{ jsonify .Params.images }}' 
+                   data-album-title="{{ .Title }}"
+                   aria-label="View photos for {{ .Title }}">
+                  <i data-lucide="camera" class="compact-btn-icon"></i>
+                  <span>{{ len .Params.images }}</span>
+                </button>
+                {{ end }}
+                {{ if .Site.Params.catalogue.show_specifications_button }}
+                <button class="compact-btn btn-info"
+                  data-title="{{ .Title }}" 
+                  data-category="{{ .Params.category }}"
+                  data-rate="{{ .Params.rate }}"
+                  data-rate-type="{{ .Params.rate_type | default `Fixed Labour Rate` }}"
+                  data-rate-date="{{ .Params.rate_date }}"
+                  data-lead="{{ .Params.lead_time }}"
+                  data-materials="{{ delimit .Params.materials `, ` }}"
+                  data-certifications="{{ delimit .Params.certifications `, ` }}"
+                  data-brief="{{ .Content | plainify | htmlEscape }}"
+                  aria-label="Info for {{ .Title }}">
+                  <i data-lucide="info" class="compact-btn-icon"></i>
+                  <span>Info</span>
+                </button>
+                {{ end }}
+                {{ if .Site.Params.catalogue.show_team_references }}
+                {{ $teamList := .Params.teams | default .Params.workers }}
+                {{ if $teamList }}
+                {{ $teamMembers := slice }}
+                {{ range $teamList }}
+                  {{ $teamPage := $.Site.GetPage (printf "/teams/%s" .) }}
+                  {{ if $teamPage }}
+                    {{ $member := dict "slug" . "name" $teamPage.Title "role" ($teamPage.Params.role | default "") "photo" ($teamPage.Params.photo | default "/icons/icon-192.png") "whatsapp" ($teamPage.Params.whatsapp | default "919840562997") }}
+                    {{ $teamMembers = $teamMembers | append $member }}
+                  {{ end }}
+                {{ end }}
+                <button class="compact-btn btn-team" data-team-trigger="teams" data-team-members='{{ jsonify $teamMembers }}' data-item-title="{{ .Title }}" aria-label="Select Team for {{ .Title }}">
+                  <i data-lucide="users" class="compact-btn-icon"></i>
+                  <span>Team</span>
+                </button>
+                {{ end }}
                 {{ end }}
               </div>
 
-              <div class="service-card-header">
-                <div class="service-icon">
-                  <i data-lucide="hammer" class="service-icon-svg"></i>
-                </div>
-                <h3>{{ .Title }}</h3>
-              </div>
-              
-              <!-- Fixed Rate Display -->
-              {{ if .Params.rate }}
-              <div class="service-rate-card">
-                <div class="rate-left">
-                  <span class="rate-type-label">{{ .Params.rate_type | default "Fixed Labour Rate" }}</span>
-                  <span class="rate-amount-val">{{ .Params.rate }}</span>
-                </div>
-                <div class="rate-right">
-                  <span class="rate-fixed-badge">FIXED RATE</span>
-                  <span class="rate-date-val">as of {{ .Params.rate_date }}</span>
-                </div>
-              </div>
-              {{ end }}
-
-              <!-- Dynamically Referenced Specialist Team Members -->
-              {{ $teamList := .Params.teams | default .Params.workers }}
-              {{ if $teamList }}
-              <div class="product-workers-section">
-                <span class="workers-tag-label">Specialist Team:</span>
-                <div class="product-workers-list">
-                  {{ range $teamList }}
-                    {{ if reflect.IsMap . }}
-                      <div class="worker-tag-chip" data-team-trigger="teams">
-                        <img src="{{ .photo | default `/icons/icon-192.png` }}" alt="{{ .name }}" class="tag-worker-avatar">
-                        <div class="tag-worker-meta">
-                          <span class="tag-worker-name">{{ .name }}</span>
-                          <span class="tag-worker-role">{{ .role }}</span>
-                        </div>
-                      </div>
-                    {{ else }}
-                      {{ $tSlug := . }}
-                      {{ $tPage := site.GetPage (printf "/teams/%s" $tSlug) }}
-                      {{ if not $tPage }}{{ $tPage = site.GetPage (printf "/workers/%s" $tSlug) }}{{ end }}
-                      {{ if $tPage }}
-                        <div class="worker-tag-chip" data-team-trigger="teams">
-                          <img src="{{ $tPage.Params.photo | default `/icons/icon-192.png` }}" alt="{{ $tPage.Title }}" class="tag-worker-avatar">
-                          <div class="tag-worker-meta">
-                            <span class="tag-worker-name">{{ $tPage.Title }}</span>
-                            <span class="tag-worker-role">{{ $tPage.Params.role }}</span>
-                          </div>
-                        </div>
-                      {{ else }}
-                        <div class="worker-tag-chip" data-team-trigger="teams">
-                          <div class="tag-worker-meta">
-                            <span class="tag-worker-name">{{ $tSlug }}</span>
-                          </div>
-                        </div>
-                      {{ end }}
-                    {{ end }}
-                  {{ end }}
-                </div>
-              </div>
-              {{ end }}
-
-              <div class="service-body">
-                <p>{{ .Summary | default .Content }}</p>
-              </div>
-
-              <!-- Button to open Detailed Brief Drawer -->
-              <button class="open-details-btn" 
-                data-title="{{ .Title }}" 
-                data-category="{{ .Params.category }}"
-                data-rate="{{ .Params.rate }}"
-                data-rate-type="{{ .Params.rate_type | default `Fixed Labour Rate` }}"
-                data-rate-date="{{ .Params.rate_date }}"
-                data-lead="{{ .Params.lead_time }}"
-                data-materials="{{ delimit .Params.materials `, ` }}"
-                data-certifications="{{ delimit .Params.certifications `, ` }}"
-                data-brief="{{ .Content | plainify }}">
-                <i data-lucide="file-text" class="btn-info-icon"></i>
-                <span>View Full Specifications & Brief</span>
-              </button>
             </div>
             {{ end }}
           </div>
@@ -235,44 +219,53 @@
 
       <!-- Screen 3: Teams -->
       <section class="screen-view" id="screen-teams" data-path="/teams/">
-        <div class="screen-scroll-container">
-          <div class="section-header">
+        <div class="screen-scroll-container shorts-scroll">
+          {{ if .Site.Params.teams.show_section_header }}
+          <div class="section-header" style="padding: 20px 20px 0;">
             <h2>Our Specialist Team</h2>
             <p class="section-intro">Certified master welders, layout specialists, and mobile rig operators.</p>
           </div>
+          {{ end }}
           <div class="workers-grid">
-            {{ range sort (where .Site.RegularPages "Section" "teams") "Params.weight" }}
-            <div class="worker-card">
+            {{ range $idx, $card := sort (where .Site.RegularPages "Section" "teams") "Params.weight" }}
+            <div class="worker-card shorts-card" data-card-index="{{ $idx }}">
               <div class="worker-media">
-                <img src="{{ .Params.photo | default `/icons/icon-192.png` }}" alt="{{ .Title }}" class="worker-photo">
-                <div class="worker-experience-badge">{{ .Params.experience }}</div>
+                <img src="{{ .Params.photo | default "/icons/icon-192.png" | absURL }}" alt="{{ .Title }}" class="worker-photo">
               </div>
-              <div class="worker-info">
+              <div class="worker-info" style="visibility: hidden; opacity: 0;">
                 <div class="worker-header-meta">
                   <h3>{{ .Title }}</h3>
                   <span class="worker-role">{{ .Params.role }}</span>
                 </div>
 
+                {{ if .Site.Params.teams.show_skills_box }}
                 <div class="worker-skills-box">
                   <span class="skills-label">Specialization / What He/She Does:</span>
                   <p class="skills-text">{{ .Params.skills }}</p>
                 </div>
+                {{ end }}
 
+                {{ if .Site.Params.teams.show_worker_bio }}
                 <div class="worker-bio">
                   {{ .Content }}
                 </div>
+                {{ end }}
 
-                <div class="worker-contact-actions">
-                  <a href="tel:{{ .Params.phone_clean | default `919840562997` }}" class="worker-btn btn-call" aria-label="Call {{ .Title }}">
-                    <i data-lucide="phone" class="btn-icon"></i>
-                    <span>Call</span>
-                  </a>
-                  <a href="https://wa.me/{{ .Params.whatsapp | default `919840562997` }}" target="_blank" rel="noopener" class="worker-btn btn-whatsapp" aria-label="Chat with {{ .Title }}">
-                    <i data-lucide="message-circle" class="btn-icon"></i>
-                    <span>Chat</span>
-                  </a>
-                </div>
               </div>
+              {{ if .Site.Params.teams.show_contact_buttons }}
+              <div class="worker-contact-actions">
+                {{ if .Site.Params.teams.show_info_button }}
+                <button class="worker-btn worker-info-btn" aria-expanded="false" aria-label="Show details for {{ .Title }}" onclick="toggleWorkerInfo({{ $idx }})">
+                  <i data-lucide="info" class="btn-icon worker-info-icon"></i>
+                  <span class="btn-label">Info</span>
+                </button>
+                {{ end }}
+                <a href="https://wa.me/{{ .Params.whatsapp | default `919840562997` }}" target="_blank" rel="noopener" class="worker-btn btn-whatsapp" aria-label="Chat with {{ .Title }}">
+                  <i data-lucide="message-circle" class="btn-icon"></i>
+                  <span class="btn-label">Chat</span>
+                </a>
+              </div>
+              {{ end }}
             </div>
             {{ end }}
           </div>
@@ -296,7 +289,7 @@
         </button>
         
         <div class="lightbox-img-wrapper">
-          <img src="" alt="Album Photo" id="lightbox-img">
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" id="lightbox-img">
         </div>
         
         <button class="lightbox-nav-btn next-btn" id="lightbox-next" aria-label="Next Photo">
@@ -356,8 +349,21 @@
     </div>
   </div>
 
-  <div class="hidden">{{ block "main" . }}{{ end }}</div>
+  <!-- Team Selector Modal -->
+  <div class="modal-overlay hidden" id="team-selector-modal" aria-hidden="true" role="dialog">
+    <div class="modal-container team-selector-container">
+      <button class="modal-close" id="close-team-selector" aria-label="Close">&times;</button>
+      <div class="modal-header-content">
+        <h2>Select Specialist</h2>
+        <p id="team-selector-item-title">Choose a team member to contact directly.</p>
+      </div>
+      <div class="team-selector-list" id="team-selector-list"></div>
+    </div>
+  </div>
+
+  {{ partial "contact-modal.html" . }}
   <script src="/js/lucide.min.js"></script>
+  <script src="/js/hammer.min.js"></script>
   <script src="/js/app.js"></script>
 </body>
 </html>
