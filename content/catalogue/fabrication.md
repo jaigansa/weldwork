@@ -19,6 +19,7 @@ teams:
 images:
   - "/images/fabrication-1.jpg"
   - "/images/fabrication-2.jpg"
+youtube_url: "BcforTzI9w0"
 ---
 
 Custom design, laser cutting, CNC bending, and heavy structural assembly for industrial factory sheds, mezzanine floors, tipper subframes, gates, staircases, and heavy machinery chassis.

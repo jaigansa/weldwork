@@ -897,6 +897,14 @@ body {
   color: var(--steel-blue);
 }
 
+.catalogue-compact-actions .compact-btn.btn-youtube {
+  color: #ff0000;
+}
+
+.catalogue-compact-actions .compact-btn.btn-youtube:hover {
+  color: #cc0000;
+}
+
 
 
 .catalogue-rate-box,
@@ -2210,4 +2218,35 @@ body {
 .team-selector-item .selector-actions svg {
   width: 18px;
   height: 18px;
+}
+
+/* Video Lightbox */
+.video-container {
+  max-width: 90vw;
+  max-height: 80vh;
+  padding: 0;
+  overflow: hidden;
+}
+
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+#video-lightbox .modal-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  z-index: 10;
 }

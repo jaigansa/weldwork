@@ -18,6 +18,7 @@ teams:
 images:
   - "/images/welding-1.jpg"
   - "/images/welding-2.jpg"
+youtube_url: "https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
 ---
 
 High-precision Shielded Metal Arc Welding (SMAW) for structural frames, pressure pipes, architectural handrails, and industrial assemblies in Chennai and Tamil Nadu industrial corridors.

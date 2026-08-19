@@ -209,6 +209,12 @@
                 </button>
                 {{ end }}
                 {{ end }}
+                {{ if .Params.youtube_url }}
+                <button class="compact-btn btn-youtube" data-youtube="{{ .Params.youtube_url }}" aria-label="Watch video for {{ .Title }}">
+                  <i data-lucide="play" class="compact-btn-icon"></i>
+                  <span>Video</span>
+                </button>
+                {{ end }}
               </div>
 
             </div>
@@ -358,6 +364,16 @@
         <p id="team-selector-item-title">Choose a team member to contact directly.</p>
       </div>
       <div class="team-selector-list" id="team-selector-list"></div>
+    </div>
+  </div>
+
+  <!-- Video Lightbox Modal -->
+  <div class="modal-overlay hidden" id="video-lightbox" aria-hidden="true" role="dialog">
+    <div class="modal-container video-container">
+      <button class="modal-close" id="close-video" aria-label="Close Video">&times;</button>
+      <div class="video-wrapper">
+        <iframe id="video-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
     </div>
   </div>
 
