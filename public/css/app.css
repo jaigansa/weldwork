@@ -679,6 +679,11 @@ body {
   font-weight: 600;
 }
 
+.shop-rating-display .rating-count {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
 .compact-btn.btn-rating-action {
   color: #fbbf24;
 }
