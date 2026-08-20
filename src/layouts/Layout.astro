@@ -286,7 +286,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
       <section class={`screen-view ${activeScreen === 'catalogue' ? 'active' : ''}`} id="screen-catalogue" data-path="/catalogue/">
         <div class="screen-scroll-container shorts-scroll">
           {PARAMS.catalogue.show_section_header && (
-            <div class="section-header" style="padding: 20px 20px 0;">
+            <div class="section-header" style={`padding: 20px 24px; background-image: url('${PARAMS.catalogue.background_image}');`}>
               <h2>{t('catalogue', lang)}</h2>
               <p class="section-intro">{t('catalogueSubtitle', lang)}</p>
             </div>
@@ -360,7 +360,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
       <section class={`screen-view ${activeScreen === 'teams' ? 'active' : ''}`} id="screen-teams" data-path="/teams/">
         <div class="screen-scroll-container shorts-scroll">
           {PARAMS.teams.show_section_header && (
-            <div class="section-header" style="padding: 20px 20px 0;">
+            <div class="section-header" style={`padding: 20px 24px; background-image: url('${PARAMS.teams.background_image}');`}>
               <h2>{t('team', lang)}</h2>
               <p class="section-intro">{t('teamsSubtitle', lang)}</p>
             </div>
@@ -413,7 +413,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
       {/* Screen 4: About */}
       <section class={`screen-view ${activeScreen === 'about' ? 'active' : ''}`} id="screen-about" data-path="/about/">
         <div class="screen-scroll-container shorts-scroll">
-          <div class="section-header" style="padding: 20px 20px 0;">
+          <div class="section-header" style="padding: 20px 24px; background-image: url('/images/shop-bg.jpg');">
             <h2>{t('aboutUs', lang)}</h2>
             <p class="section-intro">{t('aboutSubtitle', lang)}</p>
           </div>

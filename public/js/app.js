@@ -76,12 +76,13 @@ function switchScreen(screenKey) {
 function checkScrollPosition(scrollTop) {
   const centerBtn = document.getElementById('app-center-btn');
   if (!centerBtn) return;
+  const lang = getLang();
   if (scrollTop > 120) {
     centerBtn.classList.add('is-scroll-top');
-    centerBtn.setAttribute('aria-label', 'Back to top');
+    centerBtn.setAttribute('aria-label', lang === 'ta' ? 'மேலே செல்' : 'Back to top');
   } else {
     centerBtn.classList.remove('is-scroll-top');
-    centerBtn.setAttribute('aria-label', 'Product Catalogue');
+    centerBtn.setAttribute('aria-label', lang === 'ta' ? 'தயாரிப்பு வகைப்பாடு' : 'Product Catalogue');
   }
 }
 
@@ -166,6 +167,13 @@ function initScrollWatcher() {
     container.addEventListener('scroll', (e) => {
       checkScrollPosition(e.target.scrollTop);
     }, { passive: true });
+  });
+
+  requestAnimationFrame(() => {
+    const activeContainer = document.querySelector('.screen-view.active .screen-scroll-container');
+    if (activeContainer) {
+      checkScrollPosition(activeContainer.scrollTop);
+    }
   });
 }
 
@@ -788,7 +796,7 @@ let currentRatingAlreadyRated = false;
 let supabaseClient = null;
 
 function getSupabase() {
-  if (!supabaseClient && window.supabase && window.supabaseConfig && window.supabaseConfig.url !== 'YOUR_SUPABASE_URL') {
+  if (!supabaseClient && window.supabase && window.supabaseConfig && window.supabaseConfig.url && window.supabaseConfig.url !== 'YOUR_SUPABASE_URL') {
     supabaseClient = window.supabase.createClient(window.supabaseConfig.url, window.supabaseConfig.anonKey);
   }
   return supabaseClient;

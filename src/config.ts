@@ -24,6 +24,7 @@ export const PARAMS = {
   },
   catalogue: {
     show_section_header: true,
+    background_image: "/images/fabrication-1.jpg",
     show_feature_images: true,
     show_category_chips: true,
     show_rate_display: true,
@@ -32,6 +33,7 @@ export const PARAMS = {
   },
   teams: {
     show_section_header: true,
+    background_image: "/images/welding-1.jpg",
     show_experience_badge: true,
     show_skills_box: true,
     show_worker_bio: true,
