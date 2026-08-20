@@ -1,0 +1,16 @@
+---
+// Redirect /teams to /en/teams/ or /ta/teams/ depending on browser language preference
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=/en/teams/" />
+  <script is:inline>
+    const lang = navigator.language.startsWith('ta') ? 'ta' : 'en';
+    window.location.replace(`/${lang}/teams/`);
+  </script>
+</head>
+<body>
+</body>
+</html>

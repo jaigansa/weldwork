@@ -1,0 +1,27 @@
+---
+interface Props {
+  activeScreen: 'home' | 'catalogue' | 'teams';
+}
+const { activeScreen } = Astro.props;
+---
+<footer class="app-nav-wrapper">
+  <div class="app-nav-bg"></div>
+  <nav class="app-nav" aria-label="Main navigation">
+    <button class={`nav-tab ${activeScreen === 'home' ? 'active' : ''}`} data-screen="home" aria-label="Home">
+      <i data-lucide="home" class="nav-icon"></i>
+      <span>Home</span>
+    </button>
+    
+    <div class="nav-tab-center">
+      <button class="center-btn-inner" id="app-center-btn" data-screen="catalogue" aria-label="Product Catalogue">
+        <i data-lucide="layers" class="center-icon icon-catalogue"></i>
+        <i data-lucide="arrow-up" class="center-icon icon-scroll-top"></i>
+      </button>
+    </div>
+    
+    <button class={`nav-tab ${activeScreen === 'teams' ? 'active' : ''}`} data-screen="teams" aria-label="Our Team">
+      <i data-lucide="users" class="nav-icon"></i>
+      <span>Team</span>
+    </button>
+  </nav>
+</footer>

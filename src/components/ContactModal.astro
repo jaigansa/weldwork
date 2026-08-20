@@ -1,0 +1,53 @@
+---
+import { t, type Lang } from '../utils/translations';
+interface Props { lang?: Lang; accessKey?: string; }
+const { lang = 'en', accessKey = '' } = Astro.props;
+---
+<div class="modal-overlay hidden" id="contact-modal" aria-hidden="true" role="dialog">
+  <div class="modal-container">
+    <button class="modal-close" id="close-modal" aria-label="Close Modal">&times;</button>
+
+    <div class="modal-header-content">
+      <h2>{t('quickInquiry', lang)}</h2>
+      <p>{t('inquiryText', lang)}</p>
+    </div>
+
+    <form id="inquiry-form">
+      <input type="hidden" name="access_key" value={accessKey} />
+      <input type="hidden" name="subject" value="Enquiry from WeldWork Site" />
+      <input type="checkbox" name="botcheck" class="hidden" style="display:none" />
+
+      <div class="form-group">
+        <label for="inquiry-name">{lang === 'ta' ? 'பெயர்' : 'Name'}</label>
+        <input type="text" id="inquiry-name" name="name" placeholder={lang === 'ta' ? 'உங்கள் பெயர்' : 'Your name'} required />
+      </div>
+
+      <div class="form-group">
+        <label for="inquiry-email">{lang === 'ta' ? 'மின்னஞ்சல்' : 'Email'}</label>
+        <input type="email" id="inquiry-email" name="email" placeholder={lang === 'ta' ? 'உங்கள் மின்னஞ்சல்' : 'your@email.com'} required />
+      </div>
+
+      <div class="form-group">
+        <label for="inquiry-phone">{lang === 'ta' ? 'தொலைபேசி' : 'Phone'}</label>
+        <input type="tel" id="inquiry-phone" name="phone" placeholder={lang === 'ta' ? 'தொலைபேசி எண்' : 'Phone number'} pattern="[\+]?[0-9\s\-\(\)]{7,15}" title={lang === 'ta' ? 'சரியான தொலைபேசி எண்ணை உள்ளிடவும்' : 'Please enter a valid phone number'} />
+      </div>
+
+      <div class="form-group">
+        <label for="inquiry-message">{lang === 'ta' ? 'செய்தி' : 'Message'}</label>
+        <textarea id="inquiry-message" name="message" placeholder={lang === 'ta' ? 'உங்கள் திட்டத்தைப் பற்றி விவரிக்கவும்' : 'Describe your project'} required></textarea>
+      </div>
+
+      <div class="form-group captcha-group">
+        <div id="turnstile-widget"></div>
+      </div>
+
+      <div id="form-feedback" class="form-feedback hidden"></div>
+
+      <div class="form-group">
+        <button type="submit" id="submit-btn" class="submit-button">
+          {lang === 'ta' ? 'செய்தியை அனுப்பு' : 'Send Message'}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,569 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ContactModal from '../components/ContactModal.astro';
+import { SITE, PARAMS } from '../config';
+import { t } from '../utils/translations';
+import * as AboutEn from '../content/pages/en/about.md';
+import * as AboutTa from '../content/pages/ta/about.md';
+
+interface Props {
+  activeScreen: 'home' | 'catalogue' | 'teams' | 'about';
+}
+
+const { activeScreen } = Astro.props;
+const lang = Astro.url.pathname.startsWith('/ta') ? 'ta' : 'en';
+
+// Fetch content collections, filter by language prefix, and sort by weight
+const companies = (await getCollection('company'))
+  .filter(item => item.id.startsWith(`${lang}/`))
+  .sort((a, b) => (a.data.weight || 0) - (b.data.weight || 0));
+
+const catalogueItems = (await getCollection('catalogue'))
+  .filter(item => item.id.startsWith(`${lang}/`))
+  .sort((a, b) => (a.data.weight || 0) - (b.data.weight || 0));
+
+const teamMembers = (await getCollection('teams'))
+  .filter(item => item.id.startsWith(`${lang}/`))
+  .sort((a, b) => (a.data.weight || 0) - (b.data.weight || 0));
+
+// Resolve Content Component for Home Content page
+const homePage = await getEntry('home', lang);
+const { Content: HomeContent } = homePage ? await render(homePage) : { Content: null };
+
+// Resolve Content Component for About Page
+const AboutContent = lang === 'ta' ? AboutTa.Content : AboutEn.Content;
+
+// Pre-render content components for teams and pre-compute team references for catalogue items
+const teamsWithContent = await Promise.all(teamMembers.map(async (member) => {
+  const rendered = await render(member);
+  return {
+    ...member,
+    ContentComponent: rendered.Content
+  };
+}));
+
+const catalogueWithTeams = await Promise.all(catalogueItems.map(async (item) => {
+  const teamList = item.data.teams || [];
+  const itemTeamMembers = teamList.map((teamSlug) => {
+    const member = teamMembers.find(t => t.id === `${lang}/${teamSlug}`);
+    return {
+      slug: teamSlug,
+      name: member?.data.title || '',
+      role: member?.data.role || '',
+      photo: member?.data.photo || '/icons/icon-192.png',
+      whatsapp: member?.data.whatsapp || '919840562997'
+    };
+  });
+
+  return {
+    ...item,
+    teamMembersJson: JSON.stringify(itemTeamMembers)
+  };
+}));
+
+const title = activeScreen === 'home' 
+  ? SITE.title 
+  : activeScreen === 'catalogue' 
+    ? `${t('catalogue', lang)} | ${SITE.title}` 
+    : activeScreen === 'teams'
+      ? `${t('team', lang)} | ${SITE.title}`
+      : `${t('aboutUs', lang)} | ${SITE.title}`;
+
+// Localized helper to translate schedule days
+const translateDays = (days: string, currentLang: 'en' | 'ta') => {
+  if (currentLang === 'en') return days;
+  return days
+    .replace(/Mon/g, 'திங்கள்')
+    .replace(/Fri/g, 'வெள்ளி')
+    .replace(/Sat(urday)?/g, 'சனி')
+    .replace(/Sun(day)?/g, 'ஞாயிறு')
+    .replace(/Holidays/g, 'விடுமுறை நாட்கள்')
+    .replace(/–/g, 'முதல்')
+    .replace(/—/g, 'முதல்')
+    .replace(/-/g, 'முதல்');
+};
+
+// Localized helper to translate schedule hours/status
+const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
+  if (currentLang === 'en') return hours;
+  return hours
+    .replace(/Regular/g, 'வழக்கமான நேரம்')
+    .replace(/Half Day/g, 'அரை நாள்')
+    .replace(/Emergency Site Support/g, 'அவசரகால தள ஆதரவு')
+    .replace(/Emergency Breakdown Support/g, 'அவசரகால பழுதுபார்ப்பு ஆதரவு')
+    .replace(/Emergency Support/g, 'அவசரகால ஆதரவு')
+    .replace(/Holiday/g, 'விடுமுறை');
+};
+---
+<!DOCTYPE html>
+<html lang={lang}>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#111827">
+  
+  <title>{title}</title>
+  <meta name="description" content={SITE.description}>
+  
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  
+  <link rel="stylesheet" href="/css/app.css">
+  
+  <link rel="preconnect" href="https://challenges.cloudflare.com">
+  <link rel="preconnect" href="https://static.cloudflareinsights.com">
+  <link rel="preconnect" href="https://api.web3forms.com">
+  
+  <script is:inline define:vars={{ turnstileSitekey: PARAMS.turnstile_sitekey }}>
+    window.turnstileSitekey = turnstileSitekey;
+  </script>
+
+  <script is:inline define:vars={{ supabaseUrl: PARAMS.supabase_url, supabaseAnonKey: PARAMS.supabase_anon_key }}>
+    window.supabaseConfig = { url: supabaseUrl, anonKey: supabaseAnonKey };
+  </script>
+
+  <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  
+  <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={`{"token": "${PARAMS.cloudflare_beacon_token}"}`}></script>
+</head>
+<body>
+  <div class="app-container">
+    <Header />
+    
+    <main class="app-content">
+      {/* Screen 1: Home / Shop Business Cards */}
+      <section class={`screen-view ${activeScreen === 'home' ? 'active' : ''}`} id="screen-home" data-path="/">
+        <div class="screen-scroll-container shorts-scroll">
+          {PARAMS.home.show_hero && (
+            <div class="hero-section" style={`background-image: url('${PARAMS.home.background_image || "/images/shop-bg.jpg"}');`}>
+              <div class="logo-badge">W</div>
+              <h1>{SITE.title}</h1>
+              <p class="hero-tagline">{SITE.description}</p>
+              
+              <div class="shop-rating-display hero-rating" data-shop-rating-id="site">
+                <span class="stars-display"></span>
+                <span class="rating-val" data-rating-avg>—</span>
+                <span class="rating-count" data-rating-count></span>
+                <span class="user-rated-label hidden"></span>
+              </div>
+
+              <div class="hero-buttons">
+                <button class="hero-btn btn-enquiry" id="open-inquiry-btn">
+                  <i data-lucide="message-circle" class="btn-icon"></i>
+                  <span>{t('quickInquiry', lang)}</span>
+                </button>
+                <button class="hero-btn btn-rating btn-rating-action" data-shop-id="site" data-shop-name={SITE.title} aria-label="Rate this site">
+                  <i data-lucide="star" class="btn-icon star-icon-hero"></i>
+                  <span>{lang === 'ta' ? 'மதிப்பீடு' : 'Rating'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Multiple Shop Business Cards with Compact Actions */}
+          <div class="shops-container">
+            {companies.map((card, idx) => (
+              <div class="shop-business-card shorts-card" data-card-index={idx}>
+                <div class="shop-card-bg" style={`background-image: url('${card.data.bg_image || "/images/shop-bg.jpg"}');`}></div>
+                {card.data.bg_video && (
+                  <video class="shop-card-video" autoplay muted loop playsinline>
+                    <source src={card.data.bg_video} type="video/mp4" />
+                  </video>
+                )}
+
+                {/* Compact 4-Action Button Bar (Right Side) */}
+                {PARAMS.home.show_action_buttons && (
+                  <div class="shop-compact-actions">
+                    {PARAMS.home.show_call_button && card.data.phone_clean && (
+                      <a href={`tel:${card.data.phone_clean}`} class="compact-btn btn-call" aria-label={`Call ${card.data.title}`}>
+                        <i data-lucide="phone" class="compact-btn-icon"></i>
+                        <span>{t('call', lang)}</span>
+                      </a>
+                    )}
+                    
+                    {PARAMS.home.show_whatsapp_button && card.data.whatsapp && (
+                      <a href={`https://wa.me/${card.data.whatsapp}`} target="_blank" rel="noopener noreferrer" class="compact-btn btn-whatsapp" aria-label={`Chat with ${card.data.title}`}>
+                        <i data-lucide="message-circle" class="compact-btn-icon"></i>
+                        <span>{t('chat', lang)}</span>
+                      </a>
+                    )}
+                    
+                    {PARAMS.home.show_location_button && card.data.address && (
+                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(card.data.title + ', ' + card.data.address)}`} target="_blank" rel="noopener noreferrer" class="compact-btn btn-map" aria-label="Open Location Map">
+                        <i data-lucide="map-pin" class="compact-btn-icon"></i>
+                        <span>{t('map', lang)}</span>
+                      </a>
+                    )}
+                    
+                    {PARAMS.home.show_email_button && card.data.email && (
+                      <a href={`mailto:${card.data.email}`} class="compact-btn btn-email" aria-label="Send Email">
+                        <i data-lucide="mail" class="compact-btn-icon"></i>
+                        <span>{t('email', lang)}</span>
+                      </a>
+                    )}
+                    
+                    <button class="compact-btn btn-rating-action" data-shop-id={card.id.replace(/^[a-z]{2}\//, '')} data-shop-name={card.data.title} aria-label={`Rate ${card.data.title}`}>
+                      <i data-lucide="star" class="compact-btn-icon"></i>
+                      <span>{t('rating', lang)}</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Shop Info (Bottom) */}
+                <div class="shop-info-bottom">
+                  <div class="card-glass-header">
+                    <img src={card.data.logo || "/icons/icon-192.png"} alt={`${card.data.title} Logo`} class="shop-card-logo" />
+                    <div class="shop-card-titles">
+                      <h2>{card.data.title}</h2>
+                      <p class="shop-tagline">{card.data.tagline}</p>
+                      <div class="shop-rating-display" data-shop-rating-id={card.id.replace(/^[a-z]{2}\//, '')}>
+                        <span class="stars-display"></span>
+                        <span class="rating-val" data-rating-avg>—</span>
+                        <span class="rating-count" data-rating-count></span>
+                        <span class="user-rated-label hidden"></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Working Hours (Collapsible) */}
+                  {PARAMS.home.show_shop_hours && (
+                    <div class="shop-hours-box" data-hours-toggle>
+                      <div class="shop-hours-summary">
+                        <div class="shop-hours-title">
+                          <i data-lucide="clock" class="hours-box-icon"></i>
+                          <span>{t('workingHours', lang)}</span>
+                        </div>
+                        <i data-lucide="chevron-down" class="hours-expand-icon"></i>
+                      </div>
+                      <div class="shop-hours-details">
+                        <div class="shop-hours-grid">
+                          {card.data.schedule && card.data.schedule.length > 0 ? (
+                            card.data.schedule.map((sched) => (
+                              <div class={`hours-row ${sched.status === 'Holiday' ? 'is-holiday' : sched.status === 'Half Day' ? 'is-halfday' : ''}`}>
+                                <span class="hours-days">{translateDays(sched.days, lang)}</span>
+                                <span class="hours-time">{translateHours(sched.hours, lang)}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <>
+                              <div class="hours-row">
+                                <span class="hours-days">{translateDays('Mon – Fri', lang)}</span>
+                                <span class="hours-time">{translateHours('8:00 AM – 8:00 PM', lang)}</span>
+                              </div>
+                              <div class="hours-row is-halfday">
+                                <span class="hours-days">{translateDays('Sunday', lang)}</span>
+                                <span class="hours-time">{translateHours('9:00 AM – 1:30 PM', lang)}</span>
+                              </div>
+                              <div class="hours-row is-holiday">
+                                <span class="hours-days">{translateDays('Holidays', lang)}</span>
+                                <span class="hours-time">{translateHours('Emergency Support', lang)}</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {PARAMS.home.show_markdown_content && HomeContent && (
+            <div class="markdown-content">
+              <HomeContent />
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Screen 2: Product / Service Catalogue */}
+      <section class={`screen-view ${activeScreen === 'catalogue' ? 'active' : ''}`} id="screen-catalogue" data-path="/catalogue/">
+        <div class="screen-scroll-container shorts-scroll">
+          {PARAMS.catalogue.show_section_header && (
+            <div class="section-header" style="padding: 20px 20px 0;">
+              <h2>{t('catalogue', lang)}</h2>
+              <p class="section-intro">{t('catalogueSubtitle', lang)}</p>
+            </div>
+          )}
+          <div class="services-grid">
+            {catalogueWithTeams.map((item, idx) => {
+              const fileBaseName = item.id.split('/').pop()?.replace('.md', '') || item.id;
+              const hasImages = item.data.images && item.data.images.length > 0;
+              
+              return (
+                <div class="service-card shorts-card" id={`card-${fileBaseName}`} data-card-index={idx}>
+                  
+                  {/* Background Image */}
+                  {hasImages && PARAMS.catalogue.show_feature_images && (
+                    <div class="catalogue-card-bg" style={`background-image: url('${item.data.images?.[0]}');`}></div>
+                  )}
+
+                  {/* Right Side Action Buttons */}
+                  <div class="catalogue-compact-actions">
+                    {hasImages && PARAMS.catalogue.show_feature_images && (
+                      <button class="compact-btn btn-album" 
+                         data-album-images={JSON.stringify(item.data.images)} 
+                         data-album-title={item.data.title}
+                         aria-label={`View photos for ${item.data.title}`}>
+                        <i data-lucide="camera" class="compact-btn-icon"></i>
+                        <span>{item.data.images?.length}</span>
+                      </button>
+                    )}
+                    {PARAMS.catalogue.show_specifications_button && (
+                      <button class="compact-btn btn-info"
+                        data-title={item.data.title}
+                        data-category={item.data.category}
+                        data-rate={item.data.rate}
+                        data-rate-type={item.data.rate_type || 'Fixed Labour Rate'}
+                        data-rate-date={item.data.rate_date}
+                        data-lead={item.data.lead_time}
+                        data-materials={item.data.materials.join(', ')}
+                        data-brief={item.body.trim()}
+                        aria-label={`Info for ${item.data.title}`}>
+                        <i data-lucide="info" class="compact-btn-icon"></i>
+                        <span>{t('info', lang)}</span>
+                      </button>
+                    )}
+                    {PARAMS.catalogue.show_team_references && item.data.teams && item.data.teams.length > 0 && (
+                      <button class="compact-btn btn-team" 
+                         data-team-trigger="teams" 
+                         data-team-members={item.teamMembersJson} 
+                         data-item-title-en={item.data.title}
+                         data-item-title-ta={item.data.title}
+                         aria-label={`Select Team for ${item.data.title}`}>
+                        <i data-lucide="users" class="compact-btn-icon"></i>
+                        <span>{t('team', lang)}</span>
+                      </button>
+                    )}
+                    {item.data.youtube_url && (
+                      <button class="compact-btn btn-youtube" data-youtube={item.data.youtube_url} aria-label={`Watch video for ${item.data.title}`}>
+                        <i data-lucide="play" class="compact-btn-icon"></i>
+                        <span>{t('video', lang)}</span>
+                      </button>
+                    )}
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Screen 3: Teams */}
+      <section class={`screen-view ${activeScreen === 'teams' ? 'active' : ''}`} id="screen-teams" data-path="/teams/">
+        <div class="screen-scroll-container shorts-scroll">
+          {PARAMS.teams.show_section_header && (
+            <div class="section-header" style="padding: 20px 20px 0;">
+              <h2>{t('team', lang)}</h2>
+              <p class="section-intro">{t('teamsSubtitle', lang)}</p>
+            </div>
+          )}
+          <div class="workers-grid">
+            {teamsWithContent.map((member, idx) => (
+              <div class="worker-card shorts-card" data-card-index={idx}>
+                <div class="worker-media">
+                  <img src={member.data.photo || "/icons/icon-192.png"} alt={member.data.title} class="worker-photo" />
+                </div>
+                <div class="worker-info" style="visibility: hidden; opacity: 0;">
+                  <div class="worker-header-meta">
+                    <h3>{member.data.title}</h3>
+                    <span class="worker-role">{member.data.role}</span>
+                  </div>
+
+                  {PARAMS.teams.show_skills_box && (
+                    <div class="worker-skills-box">
+                      <span class="skills-label">{t('specialization', lang)}</span>
+                      <p class="skills-text">{member.data.skills}</p>
+                    </div>
+                  )}
+
+                  {PARAMS.teams.show_worker_bio && (
+                    <div class="worker-bio">
+                      <member.ContentComponent />
+                    </div>
+                  )}
+                </div>
+                {PARAMS.teams.show_contact_buttons && (
+                  <div class="worker-contact-actions">
+                    {PARAMS.teams.show_info_button && (
+                      <button class="worker-btn worker-info-btn" aria-expanded="false" aria-label={`Show details for ${member.data.title}`} onclick={`toggleWorkerInfo(${idx})`}>
+                        <i data-lucide="info" class="btn-icon worker-info-icon"></i>
+                        <span class="btn-label">{t('info', lang)}</span>
+                      </button>
+                    )}
+                    <a href={`https://wa.me/${member.data.whatsapp || '919840562997'}`} target="_blank" rel="noopener noreferrer" class="worker-btn btn-whatsapp" aria-label={`Chat with ${member.data.title}`}>
+                      <i data-lucide="message-circle" class="btn-icon"></i>
+                      <span class="btn-label">{t('chat', lang)}</span>
+                    </a>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Screen 4: About */}
+      <section class={`screen-view ${activeScreen === 'about' ? 'active' : ''}`} id="screen-about" data-path="/about/">
+        <div class="screen-scroll-container shorts-scroll">
+          <div class="section-header" style="padding: 20px 20px 0;">
+            <h2>{t('aboutUs', lang)}</h2>
+            <p class="section-intro">{t('aboutSubtitle', lang)}</p>
+          </div>
+          <div class="markdown-content">
+            {AboutContent && <AboutContent />}
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <Footer activeScreen={activeScreen} />
+  </div>
+
+  {/* Interactive Cycling Photo Album Lightbox Modal */}
+  <div class="photo-lightbox-overlay hidden" id="photo-lightbox" aria-hidden="true" role="dialog">
+    <div class="lightbox-content">
+      <button class="lightbox-close-btn" id="close-lightbox" aria-label="Close Photo">
+        <i data-lucide="x"></i>
+      </button>
+      
+      <div class="lightbox-main-view">
+        <button class="lightbox-nav-btn prev-btn" id="lightbox-prev" aria-label="Previous Photo">
+          <i data-lucide="chevron-left"></i>
+        </button>
+        
+        <div class="lightbox-img-wrapper">
+          <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" id="lightbox-img" />
+        </div>
+        
+        <button class="lightbox-nav-btn next-btn" id="lightbox-next" aria-label="Next Photo">
+          <i data-lucide="chevron-right"></i>
+        </button>
+      </div>
+
+      <div class="lightbox-footer">
+        <div class="lightbox-info">
+          <span class="lightbox-title" id="lightbox-caption">Product Title</span>
+          <span class="lightbox-counter" id="lightbox-counter">1 / 2</span>
+        </div>
+        <div class="lightbox-dots" id="lightbox-dots"></div>
+      </div>
+    </div>
+  </div>
+
+  {/* Product / Service Details Brief Modal Drawer */}
+  <div class="details-drawer-overlay hidden" id="details-drawer" aria-hidden="true" role="dialog">
+    <div class="details-drawer-container">
+      <button class="drawer-close-btn" id="close-details" aria-label="Close Details">
+        <i data-lucide="x"></i>
+      </button>
+      <div class="drawer-header">
+        <span class="drawer-category" id="drawer-category">Category</span>
+        <h2 id="drawer-title">Product Title</h2>
+      </div>
+
+      <div class="drawer-pricing-box">
+        <div class="pricing-badge-row">
+          <span class="pricing-type" id="drawer-rate-type">Fixed Labour Rate</span>
+          <span class="pricing-amount" id="drawer-rate">₹0</span>
+        </div>
+        <span class="pricing-date" id="drawer-rate-date">as of Date</span>
+      </div>
+
+      <div class="drawer-specs-grid">
+        <div class="spec-card">
+          <span class="spec-label">{t('leadTime', lang)}</span>
+          <span class="spec-value" id="drawer-lead">—</span>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <h3>{t('materialsSupported', lang)}</h3>
+        <div class="materials-tags" id="drawer-materials"></div>
+      </div>
+
+      <div class="drawer-section">
+        <h3>{t('productBrief', lang)}</h3>
+        <div class="drawer-brief-body" id="drawer-brief"></div>
+      </div>
+    </div>
+  </div>
+
+  {/* Team Selector Modal */}
+  <div class="modal-overlay hidden" id="team-selector-modal" aria-hidden="true" role="dialog">
+    <div class="modal-container team-selector-container">
+      <button class="modal-close" id="close-team-selector" aria-label="Close">&times;</button>
+      <div class="modal-header-content">
+        <h2>{t('selectSpecialist', lang)}</h2>
+        <p id="team-selector-item-title">{t('chooseMember', lang)}</p>
+      </div>
+      <div class="team-selector-list" id="team-selector-list"></div>
+    </div>
+  </div>
+
+  {/* Video Lightbox Modal */}
+  <div class="modal-overlay hidden" id="video-lightbox" aria-hidden="true" role="dialog">
+    <div class="modal-container video-container">
+      <button class="modal-close" id="close-video" aria-label="Close Video">&times;</button>
+      <div class="video-wrapper">
+        <iframe id="video-iframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  {/* Custom Rating Modal */}
+  <div class="modal-overlay hidden" id="rating-modal" aria-hidden="true" role="dialog">
+    <div class="modal-container rating-modal-container">
+      <button class="modal-close" id="close-rating-modal" aria-label="Close">&times;</button>
+      <div class="modal-header-content">
+        <h2>{t('submitRating', lang)}</h2>
+        <p id="rating-modal-shop-name">Shop Name</p>
+      </div>
+      <div class="star-rating-input">
+        <button class="star-input-btn" data-star="1" aria-label="1 Star"><i data-lucide="star" class="modal-star-icon"></i></button>
+        <button class="star-input-btn" data-star="2" aria-label="2 Stars"><i data-lucide="star" class="modal-star-icon"></i></button>
+        <button class="star-input-btn" data-star="3" aria-label="3 Stars"><i data-lucide="star" class="modal-star-icon"></i></button>
+        <button class="star-input-btn" data-star="4" aria-label="4 Stars"><i data-lucide="star" class="modal-star-icon"></i></button>
+        <button class="star-input-btn" data-star="5" aria-label="5 Stars"><i data-lucide="star" class="modal-star-icon"></i></button>
+      </div>
+      <div class="rating-form-fields">
+        <div class="form-group">
+          <label for="rating-name">{t('ratingName', lang)}</label>
+          <input type="text" id="rating-name" placeholder={lang === 'ta' ? 'உங்கள் பெயர்' : 'Your name'} maxlength="50" />
+        </div>
+        <div class="form-group">
+          <label for="rating-message">{t('ratingMessage', lang)}</label>
+          <textarea id="rating-message" rows="3" placeholder={lang === 'ta' ? 'உங்கள் அனுபவத்தைப் பகிரவும்' : 'Share your experience'} maxlength="500"></textarea>
+        </div>
+      </div>
+      <div id="rating-feedback" class="form-feedback hidden"></div>
+      <div class="rating-modal-actions">
+        <button class="submit-button" id="submit-rating-btn" disabled>{t('ratingSubmit', lang)}</button>
+      </div>
+
+      <details class="reviews-section" id="reviews-section">
+        <summary class="reviews-header">
+          <h3>{lang === 'ta' ? 'விமர்சனங்கள்' : 'Reviews'}</h3>
+          <span class="reviews-count" id="reviews-count"></span>
+        </summary>
+        <div class="reviews-list" id="reviews-list">
+          <div class="reviews-empty" id="reviews-empty">{lang === 'ta' ? 'இன்னும் விமர்சனங்கள் இல்லை' : 'No reviews yet'}</div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <ContactModal lang={lang} accessKey={PARAMS.web3forms_access_key} />
+  
+  <script is:inline src="/js/lucide.min.js"></script>
+  <script is:inline src="/js/hammer.min.js"></script>
+  <script is:inline src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+---
+// Redirect /catalogue to /en/catalogue/ or /ta/catalogue/ depending on browser language preference
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=/en/catalogue/" />
+  <script is:inline>
+    const lang = navigator.language.startsWith('ta') ? 'ta' : 'en';
+    window.location.replace(`/${lang}/catalogue/`);
+  </script>
+</head>
+<body>
+</body>
+</html>

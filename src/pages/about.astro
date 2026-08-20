@@ -1,0 +1,16 @@
+---
+// Redirect /about to /en/about/ or /ta/about/ depending on browser language preference
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=/en/about/" />
+  <script is:inline>
+    const lang = navigator.language.startsWith('ta') ? 'ta' : 'en';
+    window.location.replace(`/${lang}/about/`);
+  </script>
+</head>
+<body>
+</body>
+</html>
