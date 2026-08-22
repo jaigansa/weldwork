@@ -316,6 +316,10 @@ function initPhotoAlbum() {
       if (quoteModal && !quoteModal.classList.contains('hidden')) {
         closeQuoteModal();
       }
+      const hoursNotice = document.getElementById('hours-notice-modal');
+      if (hoursNotice && !hoursNotice.classList.contains('hidden') && typeof window.hideHoursNotice === 'function') {
+        window.hideHoursNotice();
+      }
     }
     if (photoLightbox && !photoLightbox.classList.contains('hidden')) {
       const activeTag = document.activeElement ? document.activeElement.tagName : '';
@@ -425,11 +429,10 @@ function initContactModal() {
   if (openBtn && modal) {
     openBtn.addEventListener('click', () => {
       if (!isWithinWorkingHours()) {
-        const lang = document.documentElement.getAttribute('lang') || 'en';
-        if (lang === 'ta') {
-          alert('எங்கள் விசாரிப்பு சேவை வேலை நேரங்களில் மட்டுமே கிடைக்கும்:\nதிங்கள்-வெள்ளி: 8:30 AM - 8:00 PM\nசனி: 8:30 AM - 7:30 PM\nஞாயிறு: 9:00 AM - 1:30 PM');
-        } else {
-          alert('Our Enquiry Support is only available during working hours:\nMon-Fri: 8:30 AM - 8:00 PM\nSat: 8:30 AM - 7:30 PM\nSun: 9:00 AM - 1:30 PM');
+        const hoursModal = document.getElementById('hours-notice-modal');
+        if (hoursModal) {
+          hoursModal.classList.remove('hidden');
+          hoursModal.setAttribute('aria-hidden', 'false');
         }
         return;
       }
@@ -526,6 +529,20 @@ function initContactModal() {
         }
       }
     });
+  }
+
+  const hoursModal = document.getElementById('hours-notice-modal');
+  const closeHoursNotice = document.getElementById('close-hours-notice');
+  if (hoursModal) {
+    const hideHoursNotice = () => {
+      hoursModal.classList.add('hidden');
+      hoursModal.setAttribute('aria-hidden', 'true');
+    };
+    if (closeHoursNotice) closeHoursNotice.addEventListener('click', hideHoursNotice);
+    hoursModal.addEventListener('click', (e) => {
+      if (e.target === hoursModal) hideHoursNotice();
+    });
+    window.hideHoursNotice = hideHoursNotice;
   }
 }
 

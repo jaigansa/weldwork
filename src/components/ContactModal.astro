@@ -51,3 +51,37 @@ const { lang = 'en', accessKey = '' } = Astro.props;
     </form>
   </div>
 </div>
+
+<div class="modal-overlay hidden" id="hours-notice-modal" aria-hidden="true" role="dialog">
+  <div class="modal-container hours-notice-container">
+    <button class="modal-close" id="close-hours-notice" aria-label="Close">&times;</button>
+
+    <div class="hours-notice-icon">
+      <i data-lucide="clock" class="hours-notice-clock"></i>
+    </div>
+
+    <div class="modal-header-content">
+      <h2>{lang === 'ta' ? 'இப்போது மூடப்பட்டுள்ளோம்' : 'We Are Currently Closed'}</h2>
+      <p>{lang === 'ta' ? 'விசாரிப்பு சேவை வேலை நேரங்களில் மட்டுமே கிடைக்கும்.' : 'Enquiry support is available during working hours only.'}</p>
+    </div>
+
+    <ul class="hours-notice-list">
+      <li><span>{lang === 'ta' ? 'திங்கள் – வெள்ளி' : 'Mon – Fri'}</span><strong>8:30 AM – 8:00 PM</strong></li>
+      <li><span>{lang === 'ta' ? 'சனி' : 'Saturday'}</span><strong>8:30 AM – 7:30 PM</strong></li>
+      <li><span>{lang === 'ta' ? 'ஞாயிறு' : 'Sunday'}</span><strong>9:00 AM – 1:30 PM</strong></li>
+    </ul>
+
+    <p class="hours-notice-hint">{lang === 'ta' ? 'அவசரமாக இருந்தால் நேரடியாக தொடர்பு கொள்ளுங்கள்:' : 'Need something urgent? Reach us directly:'}</p>
+
+    <div class="hours-notice-actions">
+      <a href="tel:+919840562997" class="hours-action-btn hours-action-call">
+        <i data-lucide="phone" class="hours-action-icon"></i>
+        {lang === 'ta' ? 'அழைப்பு' : 'Call'}
+      </a>
+      <a href="https://wa.me/919840562997" target="_blank" rel="noopener noreferrer" class="hours-action-btn hours-action-whatsapp">
+        <i data-lucide="message-circle" class="hours-action-icon"></i>
+        WhatsApp
+      </a>
+    </div>
+  </div>
+</div>

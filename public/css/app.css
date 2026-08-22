@@ -1531,6 +1531,106 @@ body {
   color: var(--text-secondary);
 }
 
+/* Working hours closed notice */
+.hours-notice-container {
+  max-width: 360px;
+  text-align: center;
+  padding-top: 28px;
+}
+
+.hours-notice-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-color) 40%, transparent);
+}
+
+.hours-notice-icon .hours-notice-clock {
+  width: 30px;
+  height: 30px;
+  color: var(--accent-color);
+}
+
+.hours-notice-list {
+  list-style: none;
+  padding: 4px 0;
+  margin: 0 0 14px;
+}
+
+.hours-notice-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--bg-tertiary);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.hours-notice-list li + li {
+  margin-top: 6px;
+}
+
+.hours-notice-list li strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hours-notice-hint {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.hours-notice-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.hours-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: #fff;
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+.hours-action-btn:hover {
+  filter: brightness(1.08);
+}
+
+.hours-action-btn:active {
+  transform: scale(0.96);
+}
+
+.hours-action-call {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+}
+
+.hours-action-whatsapp {
+  background: linear-gradient(135deg, var(--whatsapp-green), #16a34a);
+}
+
+.hours-action-icon {
+  width: 17px;
+  height: 17px;
+}
+
 
 .open-details-btn {
   display: flex;
