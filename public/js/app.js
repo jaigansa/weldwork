@@ -537,7 +537,6 @@ const quoteFeedback = document.getElementById('quote-form-feedback');
 const quoteSubmitBtn = document.getElementById('quote-submit-btn');
 const quotePhotosInput = document.getElementById('quote-photos');
 const quoteProductInput = document.getElementById('quote-product-input');
-const quoteSubjectInput = document.getElementById('quote-subject-input');
 const quoteBanner = document.getElementById('quote-product-banner');
 const quoteBannerTitle = document.getElementById('quote-product-title');
 const quoteBannerRate = document.getElementById('quote-product-rate');
@@ -549,7 +548,6 @@ function openQuoteModal(btn) {
   const category = btn.getAttribute('data-category') || '';
 
   if (quoteProductInput) quoteProductInput.value = title;
-  if (quoteSubjectInput) quoteSubjectInput.value = title ? `Quote Request: ${title}` : 'Quote Request from WeldWork Site';
   quoteModal.dataset.category = category;
   if (quoteBanner && title) {
     if (quoteBannerTitle) quoteBannerTitle.textContent = title;
@@ -559,17 +557,6 @@ function openQuoteModal(btn) {
 
   quoteModal.classList.remove('hidden');
   quoteModal.setAttribute('aria-hidden', 'false');
-
-  if (typeof turnstile !== 'undefined' && !quoteModal.dataset.turnstileRendered) {
-    const widgetEl = document.getElementById('turnstile-widget-quote');
-    if (widgetEl && window.turnstileSitekey) {
-      turnstile.render(widgetEl, {
-        sitekey: window.turnstileSitekey,
-        theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
-      });
-      quoteModal.dataset.turnstileRendered = 'true';
-    }
-  }
 }
 
 function closeQuoteModal() {
@@ -646,6 +633,12 @@ async function initQuoteModal() {
       const lang = getLang();
       const ta = lang === 'ta';
 
+      const botcheck = quoteForm.querySelector('input[name="botcheck"]');
+      if (botcheck && botcheck.checked) {
+        closeQuoteModal();
+        return;
+      }
+
       const phoneInput = document.getElementById('quote-phone');
       if (phoneInput && phoneInput.value.trim()) {
         const digits = phoneInput.value.replace(/\D/g, '');
@@ -657,6 +650,18 @@ async function initQuoteModal() {
           }
           return;
         }
+      }
+
+      const db = getSupabase();
+      if (!db) {
+        if (quoteFeedback) {
+          quoteFeedback.textContent = ta
+            ? 'மேற்கோள் சேவை தற்போது கிடைக்கவில்லை. தயவுசெய்து நேரடியாக எங்களை அழைக்கவும்.'
+            : 'Quote service is currently unavailable. Please call us directly.';
+          quoteFeedback.className = 'form-feedback error';
+          quoteFeedback.classList.remove('hidden');
+        }
+        return;
       }
 
       let photoFiles = [];
@@ -674,51 +679,31 @@ async function initQuoteModal() {
       try {
         const photoUrls = await uploadQuotePhotos(photoFiles);
 
-        const db = getSupabase();
-        if (db) {
-          try {
-            await db.from('quotes').insert({
-              product_title: quoteProductInput ? quoteProductInput.value : '',
-              product_category: quoteModal.dataset.category || null,
-              name: document.getElementById('quote-name')?.value || '',
-              phone: phoneInput?.value || '',
-              email: document.getElementById('quote-email')?.value || null,
-              message: document.getElementById('quote-message')?.value || '',
-              attachments: photoUrls,
-              status: 'new',
-              lang
-            });
-          } catch {
-          }
-        }
-
-        const formData = new FormData(quoteForm);
-        if (photoUrls.length) {
-          formData.append('photo_links', photoUrls.join('\n'));
-        }
-
-        const response = await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          body: formData
+        const { error } = await db.from('quotes').insert({
+          product_title: quoteProductInput ? quoteProductInput.value : '',
+          product_category: quoteModal.dataset.category || null,
+          name: document.getElementById('quote-name')?.value || '',
+          phone: phoneInput?.value || '',
+          email: document.getElementById('quote-email')?.value || null,
+          message: document.getElementById('quote-message')?.value || '',
+          attachments: photoUrls,
+          status: 'new',
+          lang
         });
-        const result = await response.json();
+        if (error) throw error;
 
-        if (result.success) {
-          if (quoteFeedback) {
-            quoteFeedback.textContent = ta
-              ? 'மேற்கோள் கோரிக்கை அனுப்பப்பட்டது! நாங்கள் விரைவில் உங்களைத் தொடர்பு கொள்கிறோம்.'
-              : "Quote request sent! We'll get back to you shortly.";
-            quoteFeedback.className = 'form-feedback success';
-            quoteFeedback.classList.remove('hidden');
-          }
-          quoteForm.reset();
-          setTimeout(() => {
-            closeQuoteModal();
-            if (quoteFeedback) quoteFeedback.classList.add('hidden');
-          }, 3000);
-        } else {
-          throw new Error(result.message || 'Submission failed');
+        if (quoteFeedback) {
+          quoteFeedback.textContent = ta
+            ? 'மேற்கோள் கோரிக்கை அனுப்பப்பட்டது! நாங்கள் விரைவில் உங்களைத் தொடர்பு கொள்கிறோம்.'
+            : "Quote request sent! We'll get back to you shortly.";
+          quoteFeedback.className = 'form-feedback success';
+          quoteFeedback.classList.remove('hidden');
         }
+        quoteForm.reset();
+        setTimeout(() => {
+          closeQuoteModal();
+          if (quoteFeedback) quoteFeedback.classList.add('hidden');
+        }, 3000);
       } catch {
         if (quoteFeedback) {
           quoteFeedback.textContent = ta

@@ -1,7 +1,7 @@
 ---
 import { type Lang } from '../utils/translations';
-interface Props { lang?: Lang; accessKey?: string; }
-const { lang = 'en', accessKey = '' } = Astro.props;
+interface Props { lang?: Lang; }
+const { lang = 'en' } = Astro.props;
 const ta = lang === 'ta';
 ---
 <div class="modal-overlay hidden" id="quote-modal" aria-hidden="true" role="dialog">
@@ -22,8 +22,6 @@ const ta = lang === 'ta';
     </div>
 
     <form id="quote-form">
-      <input type="hidden" name="access_key" value={accessKey} />
-      <input type="hidden" name="subject" id="quote-subject-input" value="Quote Request from WeldWork Site" />
       <input type="hidden" name="product_title" id="quote-product-input" value="" />
       <input type="checkbox" name="botcheck" class="hidden" style="display:none" />
 
@@ -51,10 +49,6 @@ const ta = lang === 'ta';
         <label for="quote-photos">{ta ? 'புகைப்படங்கள் (விருப்பத்திற்கு, 4 வரை)' : 'Photos (optional, up to 4)'}</label>
         <input type="file" id="quote-photos" name="photos" accept="image/*" multiple data-max-files="4" />
         <small class="field-hint">{ta ? 'உங்கள் லாரி / வேலையின் புகைப்படங்களை சேர்க்கவும்' : 'Add photos of your truck / job for a faster, accurate quote'}</small>
-      </div>
-
-      <div class="form-group captcha-group">
-        <div id="turnstile-widget-quote"></div>
       </div>
 
       <div id="quote-form-feedback" class="form-feedback hidden"></div>
