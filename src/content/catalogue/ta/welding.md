@@ -3,7 +3,7 @@ title: "துல்லிய ஆர்க் வெல்டிங்"
 category: "தனிப்பயன் உலோக வேலைப்பாடு"
 weight: 1
 rate: "₹1,200"
-rate_type: "நிலையான உழைப்பு விகிதம்"
+rate_type: "தொடக்க உழைப்பு விகிதம்"
 rate_date: "16 Aug 2026"
 lead_time: "1 – 2 நாட்கள்"
 materials:

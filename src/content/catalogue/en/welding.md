@@ -3,7 +3,7 @@ title: "Precision ARC Welding"
 category: "Custom Metalwork"
 weight: 1
 rate: "₹1,200"
-rate_type: "Fixed Labour Rate"
+rate_type: "Starting Labour Rate"
 rate_date: "16 Aug 2026"
 lead_time: "1 – 2 Days"
 materials:

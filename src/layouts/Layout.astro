@@ -3,6 +3,7 @@ import { getCollection, getEntry, render } from 'astro:content';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import ContactModal from '../components/ContactModal.astro';
+import QuoteModal from '../components/QuoteModal.astro';
 import { SITE, PARAMS } from '../config';
 import { t } from '../utils/translations';
 import * as AboutEn from '../content/pages/en/about.md';
@@ -304,6 +305,21 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                     <div class="catalogue-card-bg" style={`background-image: url('${item.data.images?.[0]}');`}></div>
                   )}
 
+                  {/* Center Get Quote CTA */}
+                  {PARAMS.catalogue.show_quote_button && (
+                    <div class="catalogue-quote-wrap">
+                      <span class="catalogue-quote-title">{item.data.title}</span>
+                      <button class="btn-quote catalogue-quote-cta"
+                        data-title={item.data.title}
+                        data-category={item.data.category}
+                        data-rate={item.data.rate}
+                        aria-label={`${t('getQuote', lang)} - ${item.data.title}`}>
+                        <i data-lucide="file-text" class="quote-cta-icon"></i>
+                        <span>{t('getQuote', lang)}</span>
+                      </button>
+                    </div>
+                  )}
+
                   {/* Right Side Action Buttons */}
                   <div class="catalogue-compact-actions">
                     {hasImages && PARAMS.catalogue.show_feature_images && (
@@ -320,7 +336,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                         data-title={item.data.title}
                         data-category={item.data.category}
                         data-rate={item.data.rate}
-                        data-rate-type={item.data.rate_type || 'Fixed Labour Rate'}
+                        data-rate-type={item.data.rate_type || 'Starting Labour Rate'}
                         data-rate-date={item.data.rate_date}
                         data-lead={item.data.lead_time}
                         data-materials={item.data.materials.join(', ')}
@@ -471,7 +487,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
 
       <div class="drawer-pricing-box">
         <div class="pricing-badge-row">
-          <span class="pricing-type" id="drawer-rate-type">Fixed Labour Rate</span>
+          <span class="pricing-type" id="drawer-rate-type">Starting Labour Rate</span>
           <span class="pricing-amount" id="drawer-rate">₹0</span>
         </div>
         <span class="pricing-date" id="drawer-rate-date">as of Date</span>
@@ -561,6 +577,10 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
   </div>
 
   <ContactModal lang={lang} accessKey={PARAMS.web3forms_access_key} />
+
+  {PARAMS.catalogue.show_quote_button && (
+    <QuoteModal lang={lang} accessKey={PARAMS.web3forms_access_key} />
+  )}
   
   <script is:inline src="/js/lucide.min.js"></script>
   <script is:inline src="/js/hammer.min.js"></script>

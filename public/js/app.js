@@ -313,6 +313,9 @@ function initPhotoAlbum() {
         contactModal.classList.add('hidden');
         contactModal.setAttribute('aria-hidden', 'true');
       }
+      if (quoteModal && !quoteModal.classList.contains('hidden')) {
+        closeQuoteModal();
+      }
     }
     if (photoLightbox && !photoLightbox.classList.contains('hidden')) {
       const activeTag = document.activeElement ? document.activeElement.tagName : '';
@@ -341,7 +344,7 @@ function openDetailsDrawer(btn) {
   if (drawerCategory) drawerCategory.textContent = btn.getAttribute('data-category') || 'Custom Fabrication';
   if (drawerTitle) drawerTitle.textContent = btn.getAttribute('data-title') || 'Product Details';
   if (drawerRate) drawerRate.textContent = btn.getAttribute('data-rate') || '₹0';
-  if (drawerRateType) drawerRateType.textContent = btn.getAttribute('data-rate-type') || 'Fixed Labour Rate';
+  if (drawerRateType) drawerRateType.textContent = btn.getAttribute('data-rate-type') || 'Starting Labour Rate';
   if (drawerRateDate) drawerRateDate.textContent = `as of ${btn.getAttribute('data-rate-date') || 'Today'}`;
   if (drawerLead) drawerLead.textContent = btn.getAttribute('data-lead') || '—';
 
@@ -521,6 +524,213 @@ function initContactModal() {
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Send Message';
+        }
+      }
+    });
+  }
+}
+
+const quoteModal = document.getElementById('quote-modal');
+const quoteForm = document.getElementById('quote-form');
+const quoteCloseBtn = document.getElementById('close-quote-modal');
+const quoteFeedback = document.getElementById('quote-form-feedback');
+const quoteSubmitBtn = document.getElementById('quote-submit-btn');
+const quotePhotosInput = document.getElementById('quote-photos');
+const quoteProductInput = document.getElementById('quote-product-input');
+const quoteSubjectInput = document.getElementById('quote-subject-input');
+const quoteBanner = document.getElementById('quote-product-banner');
+const quoteBannerTitle = document.getElementById('quote-product-title');
+const quoteBannerRate = document.getElementById('quote-product-rate');
+
+function openQuoteModal(btn) {
+  if (!quoteModal) return;
+  const title = btn.getAttribute('data-title') || '';
+  const rate = btn.getAttribute('data-rate') || '';
+  const category = btn.getAttribute('data-category') || '';
+
+  if (quoteProductInput) quoteProductInput.value = title;
+  if (quoteSubjectInput) quoteSubjectInput.value = title ? `Quote Request: ${title}` : 'Quote Request from WeldWork Site';
+  quoteModal.dataset.category = category;
+  if (quoteBanner && title) {
+    if (quoteBannerTitle) quoteBannerTitle.textContent = title;
+    if (quoteBannerRate) quoteBannerRate.textContent = [category, rate].filter(Boolean).join(' • ');
+    quoteBanner.classList.remove('hidden');
+  }
+
+  quoteModal.classList.remove('hidden');
+  quoteModal.setAttribute('aria-hidden', 'false');
+
+  if (typeof turnstile !== 'undefined' && !quoteModal.dataset.turnstileRendered) {
+    const widgetEl = document.getElementById('turnstile-widget-quote');
+    if (widgetEl && window.turnstileSitekey) {
+      turnstile.render(widgetEl, {
+        sitekey: window.turnstileSitekey,
+        theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
+      });
+      quoteModal.dataset.turnstileRendered = 'true';
+    }
+  }
+}
+
+function closeQuoteModal() {
+  if (!quoteModal) return;
+  quoteModal.classList.add('hidden');
+  quoteModal.setAttribute('aria-hidden', 'true');
+}
+
+async function compressImage(file, maxDim = 1600, quality = 0.8) {
+  if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+  try {
+    const img = await createImageBitmap(file);
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    if (scale >= 1 && file.size < 300 * 1024) return file;
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+    if (blob && blob.size < file.size) {
+      const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
+      return new File([blob], name, { type: 'image/jpeg' });
+    }
+    return file;
+  } catch {
+    return file;
+  }
+}
+
+async function uploadQuotePhotos(files) {
+  const db = getSupabase();
+  if (!db || !files.length) return [];
+  const urls = [];
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  for (let i = 0; i < files.length; i++) {
+    try {
+      const compressed = await compressImage(files[i]);
+      const path = `quotes/${dateStamp}/${Date.now()}-${i}.jpg`;
+      const { error } = await db.storage.from('quote-attachments').upload(path, compressed, {
+        contentType: compressed.type,
+        upsert: false
+      });
+      if (error) continue;
+      const { data } = db.storage.from('quote-attachments').getPublicUrl(path);
+      if (data?.publicUrl) urls.push(data.publicUrl);
+    } catch {
+      continue;
+    }
+  }
+  return urls;
+}
+
+async function initQuoteModal() {
+  if (!quoteModal) return;
+
+  document.querySelectorAll('.btn-quote').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openQuoteModal(btn);
+    });
+  });
+
+  if (quoteCloseBtn) quoteCloseBtn.addEventListener('click', closeQuoteModal);
+
+  quoteModal.addEventListener('click', (e) => {
+    if (e.target === quoteModal) closeQuoteModal();
+  });
+
+  if (quoteForm) {
+    quoteForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const lang = getLang();
+      const ta = lang === 'ta';
+
+      const phoneInput = document.getElementById('quote-phone');
+      if (phoneInput && phoneInput.value.trim()) {
+        const digits = phoneInput.value.replace(/\D/g, '');
+        if (digits.length < 7 || digits.length > 15) {
+          if (quoteFeedback) {
+            quoteFeedback.textContent = ta ? 'சரியான தொலைபேசி எண்ணை உள்ளிடவும்.' : 'Please enter a valid phone number.';
+            quoteFeedback.className = 'form-feedback error';
+            quoteFeedback.classList.remove('hidden');
+          }
+          return;
+        }
+      }
+
+      let photoFiles = [];
+      if (quotePhotosInput && quotePhotosInput.files) {
+        photoFiles = Array.from(quotePhotosInput.files).slice(0, parseInt(quotePhotosInput.dataset.maxFiles || '4', 10));
+      }
+
+      if (quoteSubmitBtn) {
+        quoteSubmitBtn.disabled = true;
+        quoteSubmitBtn.textContent = photoFiles.length
+          ? (ta ? 'புகைப்படங்கள் பதிவேற்றுகிறது...' : 'Uploading photos...')
+          : (ta ? 'அனுப்புகிறது...' : 'Sending...');
+      }
+
+      try {
+        const photoUrls = await uploadQuotePhotos(photoFiles);
+
+        const db = getSupabase();
+        if (db) {
+          try {
+            await db.from('quotes').insert({
+              product_title: quoteProductInput ? quoteProductInput.value : '',
+              product_category: quoteModal.dataset.category || null,
+              name: document.getElementById('quote-name')?.value || '',
+              phone: phoneInput?.value || '',
+              email: document.getElementById('quote-email')?.value || null,
+              message: document.getElementById('quote-message')?.value || '',
+              attachments: photoUrls,
+              status: 'new',
+              lang
+            });
+          } catch {
+          }
+        }
+
+        const formData = new FormData(quoteForm);
+        if (photoUrls.length) {
+          formData.append('photo_links', photoUrls.join('\n'));
+        }
+
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          if (quoteFeedback) {
+            quoteFeedback.textContent = ta
+              ? 'மேற்கோள் கோரிக்கை அனுப்பப்பட்டது! நாங்கள் விரைவில் உங்களைத் தொடர்பு கொள்கிறோம்.'
+              : "Quote request sent! We'll get back to you shortly.";
+            quoteFeedback.className = 'form-feedback success';
+            quoteFeedback.classList.remove('hidden');
+          }
+          quoteForm.reset();
+          setTimeout(() => {
+            closeQuoteModal();
+            if (quoteFeedback) quoteFeedback.classList.add('hidden');
+          }, 3000);
+        } else {
+          throw new Error(result.message || 'Submission failed');
+        }
+      } catch {
+        if (quoteFeedback) {
+          quoteFeedback.textContent = ta
+            ? 'ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும் அல்லது நேரடியாக எங்களை அழைக்கவும்.'
+            : 'Something went wrong. Please try again or call us directly.';
+          quoteFeedback.className = 'form-feedback error';
+          quoteFeedback.classList.remove('hidden');
+        }
+      } finally {
+        if (quoteSubmitBtn) {
+          quoteSubmitBtn.disabled = false;
+          quoteSubmitBtn.textContent = ta ? 'மேற்கோள் கோரிக்கை அனுப்பு' : 'Request Quote';
         }
       }
     });
@@ -1097,6 +1307,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPhotoAlbum();
   initDetailsDrawer();
   initContactModal();
+  initQuoteModal();
   initShortsCards();
   initVideoFallback();
   initHoursToggle();

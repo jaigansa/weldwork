@@ -3,7 +3,7 @@ title: "கனரக கட்டமைப்பு எஃகு தயாரி
 category: "தொழில்துறை உற்பத்தி"
 weight: 2
 rate: "₹4,500"
-rate_type: "நிலையான அலகு தயாரிப்பு வீதம்"
+rate_type: "தொடக்க அலகு தயாரிப்பு வீதம்"
 rate_date: "16 Aug 2026"
 lead_time: "3 – 5 நாட்கள்"
 materials:

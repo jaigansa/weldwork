@@ -3,7 +3,7 @@ title: "Heavy Structural Steel Fabrication"
 category: "Industrial Manufacturing"
 weight: 2
 rate: "₹4,500"
-rate_type: "Fixed Unit Fabrication Rate"
+rate_type: "Starting Unit Fabrication Rate"
 rate_date: "16 Aug 2026"
 lead_time: "3 – 5 Days"
 materials:

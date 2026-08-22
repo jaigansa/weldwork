@@ -3,7 +3,7 @@ title: "On-Site Mobile Welding & Field Repairs"
 category: "Field Service"
 weight: 3
 rate: "₹1,500/hrs"
-rate_type: "Fixed Field Service Rate"
+rate_type: "Starting Field Service Rate"
 rate_date: "16 Aug 2026"
 lead_time: "Same Day / Immediate"
 materials:

@@ -3,7 +3,7 @@ title: "தளத்திலான மொபைல் வெல்டிங் 
 category: "கள சேவை"
 weight: 3
 rate: "₹1,500/மணிக்கு"
-rate_type: "நிலையான கள சேவை கட்டணம்"
+rate_type: "தொடக்க கள சேவை கட்டணம்"
 rate_date: "16 Aug 2026"
 lead_time: "ஒரே நாளில் / உடனடியாக"
 materials:

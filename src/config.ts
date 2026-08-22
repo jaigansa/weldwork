@@ -30,6 +30,7 @@ export const PARAMS = {
     show_rate_display: true,
     show_team_references: true,
     show_specifications_button: true,
+    show_quote_button: true,
   },
   teams: {
     show_section_header: true,
