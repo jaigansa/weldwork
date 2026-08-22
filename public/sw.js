@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weldwork-cache-v1';
+const CACHE_NAME = 'weldwork-cache-v2';
 const ASSETS = [
   '/',
   '/css/app.css',
@@ -12,10 +12,17 @@ const ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+      return Promise.all(ASSETS.map(async (asset) => {
+        try {
+          const res = await fetch(asset + '?swrefresh=' + CACHE_NAME, { cache: 'no-store' });
+          if (res && res.ok) {
+            await cache.put(asset, res.clone());
+          }
+        } catch {
+        }
+      })).then(() => self.skipWaiting());
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -28,9 +35,8 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
@@ -45,21 +51,17 @@ self.addEventListener('fetch', (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
-        }
-
+    fetch(event.request).then((response) => {
+      if (response && response.status === 200 && response.type === 'basic') {
         const responseToCache = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
         });
-
-        return response;
+      }
+      return response;
+    }).catch(() => {
+      return caches.match(event.request).then((cached) => {
+        return cached || new Response('', { status: 503, statusText: 'Offline' });
       });
     })
   );
