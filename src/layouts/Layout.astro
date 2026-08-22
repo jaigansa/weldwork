@@ -86,6 +86,20 @@ const translateDays = (days: string, currentLang: 'en' | 'ta') => {
     .replace(/-/g, 'முதல்');
 };
 
+// Format 24h "HH:MM" as 12h "H:MM AM/PM"
+const formatHour = (hhmm: string) => {
+  const [h, m] = hhmm.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+};
+
+// Localized enquiry schedule rows for the closed notice popup
+const enquiryScheduleRows = PARAMS.enquiry.schedule.map(slot => ({
+  label: translateDays(slot.label, lang),
+  hours: `${formatHour(slot.open)} – ${formatHour(slot.close)}`
+}));
+
 // Localized helper to translate schedule hours/status
 const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
   if (currentLang === 'en') return hours;
@@ -130,6 +144,10 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
 
   <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+  <script is:inline define:vars={{ enquirySchedule: PARAMS.enquiry.schedule }}>
+    window.enquirySchedule = enquirySchedule;
+  </script>
   
   <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={`{"token": "${PARAMS.cloudflare_beacon_token}"}`}></script>
 </head>
@@ -577,7 +595,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
     </div>
   </div>
 
-  <ContactModal lang={lang} accessKey={PARAMS.web3forms_access_key} />
+  <ContactModal lang={lang} accessKey={PARAMS.web3forms_access_key} schedule={enquiryScheduleRows} phone={PARAMS.enquiry.phone} whatsapp={PARAMS.enquiry.whatsapp} />
 
   {PARAMS.catalogue.show_quote_button && (
     <QuoteModal lang={lang} />

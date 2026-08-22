@@ -399,23 +399,23 @@ function initDetailsDrawer() {
 }
 
 function isWithinWorkingHours() {
-  const now = new Date();
-  const day = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-  const timeInMinutes = hour * 60 + minute;
+  const schedule = Array.isArray(window.enquirySchedule) ? window.enquirySchedule : null;
+  if (!schedule || schedule.length === 0) return true;
 
-  if (day >= 1 && day <= 5) {
-    // Mon - Fri: 8:30 AM to 8:00 PM
-    return timeInMinutes >= 510 && timeInMinutes <= 1200;
-  } else if (day === 6) {
-    // Saturday: 8:30 AM to 7:30 PM
-    return timeInMinutes >= 510 && timeInMinutes <= 1170;
-  } else if (day === 0) {
-    // Sunday: 9:00 AM to 1:30 PM
-    return timeInMinutes >= 540 && timeInMinutes <= 810;
-  }
-  return false;
+  const now = new Date();
+  const day = now.getDay(); // 0 = Sunday ... 6 = Saturday
+  const timeInMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const toMinutes = (hhmm) => {
+    const [h, m] = String(hhmm).split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
+
+  return schedule.some(slot =>
+    Array.isArray(slot.days) && slot.days.includes(day) &&
+    timeInMinutes >= toMinutes(slot.open) &&
+    timeInMinutes <= toMinutes(slot.close)
+  );
 }
 
 function initContactModal() {

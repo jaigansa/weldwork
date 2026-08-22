@@ -1,7 +1,13 @@
 ---
 import { t, type Lang } from '../utils/translations';
-interface Props { lang?: Lang; accessKey?: string; }
-const { lang = 'en', accessKey = '' } = Astro.props;
+interface Props {
+  lang?: Lang;
+  accessKey?: string;
+  schedule?: { label: string; hours: string }[];
+  phone?: string;
+  whatsapp?: string;
+}
+const { lang = 'en', accessKey = '', schedule = [], phone = '+919840562997', whatsapp = '919840562997' } = Astro.props;
 ---
 <div class="modal-overlay hidden" id="contact-modal" aria-hidden="true" role="dialog">
   <div class="modal-container">
@@ -66,19 +72,19 @@ const { lang = 'en', accessKey = '' } = Astro.props;
     </div>
 
     <ul class="hours-notice-list">
-      <li><span>{lang === 'ta' ? 'திங்கள் – வெள்ளி' : 'Mon – Fri'}</span><strong>8:30 AM – 8:00 PM</strong></li>
-      <li><span>{lang === 'ta' ? 'சனி' : 'Saturday'}</span><strong>8:30 AM – 7:30 PM</strong></li>
-      <li><span>{lang === 'ta' ? 'ஞாயிறு' : 'Sunday'}</span><strong>9:00 AM – 1:30 PM</strong></li>
+      {schedule.map(row => (
+        <li><span>{row.label}</span><strong>{row.hours}</strong></li>
+      ))}
     </ul>
 
     <p class="hours-notice-hint">{lang === 'ta' ? 'அவசரமாக இருந்தால் நேரடியாக தொடர்பு கொள்ளுங்கள்:' : 'Need something urgent? Reach us directly:'}</p>
 
     <div class="hours-notice-actions">
-      <a href="tel:+919840562997" class="hours-action-btn hours-action-call">
+      <a href={`tel:${phone}`} class="hours-action-btn hours-action-call">
         <i data-lucide="phone" class="hours-action-icon"></i>
         {lang === 'ta' ? 'அழைப்பு' : 'Call'}
       </a>
-      <a href="https://wa.me/919840562997" target="_blank" rel="noopener noreferrer" class="hours-action-btn hours-action-whatsapp">
+      <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer" class="hours-action-btn hours-action-whatsapp">
         <i data-lucide="message-circle" class="hours-action-icon"></i>
         WhatsApp
       </a>

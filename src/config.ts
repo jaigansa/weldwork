@@ -11,6 +11,16 @@ export const PARAMS = {
   cloudflare_beacon_token: import.meta.env.PUBLIC_CLOUDFLARE_BEACON_TOKEN || "",
   supabase_url: import.meta.env.PUBLIC_SUPABASE_URL || "",
   supabase_anon_key: import.meta.env.PUBLIC_SUPABASE_ANON_KEY || "",
+  enquiry: {
+    phone: "+919840562997",
+    whatsapp: "919840562997",
+    // days = JS Date.getDay(): Sun=0 ... Sat=6; open/close = 24h HH:MM
+    schedule: [
+      { label: "Mon – Fri", days: [1, 2, 3, 4, 5], open: "08:30", close: "20:00" },
+      { label: "Saturday", days: [6], open: "08:30", close: "19:30" },
+      { label: "Sunday", days: [0], open: "09:00", close: "13:30" },
+    ],
+  },
   home: {
     show_hero: true,
     background_image: "/images/shop-bg.jpg",
