@@ -437,7 +437,6 @@ function initContactModal() {
       modal.setAttribute('aria-hidden', 'false');
 
       if (typeof turnstile !== 'undefined' && !modal.dataset.turnstileRendered) {
-        const sitekey = modal.querySelector('input[name="access_key"]')?.value;
         const widgetEl = document.getElementById('turnstile-widget');
         if (widgetEl && window.turnstileSitekey) {
           window.turnstile.render(widgetEl, {
@@ -557,6 +556,17 @@ function openQuoteModal(btn) {
 
   quoteModal.classList.remove('hidden');
   quoteModal.setAttribute('aria-hidden', 'false');
+
+  if (typeof turnstile !== 'undefined' && !quoteModal.dataset.turnstileRendered) {
+    const widgetEl = document.getElementById('turnstile-widget-quote');
+    if (widgetEl && window.turnstileSitekey) {
+      turnstile.render(widgetEl, {
+        sitekey: window.turnstileSitekey,
+        theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
+      });
+      quoteModal.dataset.turnstileRendered = 'true';
+    }
+  }
 }
 
 function closeQuoteModal() {
@@ -658,6 +668,16 @@ async function initQuoteModal() {
           quoteFeedback.textContent = ta
             ? 'மேற்கோள் சேவை தற்போது கிடைக்கவில்லை. தயவுசெய்து நேரடியாக எங்களை அழைக்கவும்.'
             : 'Quote service is currently unavailable. Please call us directly.';
+          quoteFeedback.className = 'form-feedback error';
+          quoteFeedback.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const captchaToken = quoteForm.querySelector('[name="cf-turnstile-response"]')?.value;
+      if (quoteModal.dataset.turnstileRendered === 'true' && !captchaToken) {
+        if (quoteFeedback) {
+          quoteFeedback.textContent = ta ? 'கேப்சாவை உறுதிப்படுத்தவும்.' : 'Please complete the captcha.';
           quoteFeedback.className = 'form-feedback error';
           quoteFeedback.classList.remove('hidden');
         }
