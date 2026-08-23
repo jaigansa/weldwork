@@ -36,6 +36,7 @@ export const PARAMS = {
     show_section_header: true,
     background_image: "/images/fabrication-1.jpg",
     show_feature_images: true,
+    show_search: true,
     show_category_chips: true,
     show_rate_display: true,
     show_team_references: true,

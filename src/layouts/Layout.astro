@@ -58,11 +58,23 @@ const catalogueWithTeams = await Promise.all(catalogueItems.map(async (item) => 
     };
   });
 
+  const searchBlob = [
+    item.data.title,
+    item.data.category,
+    item.data.materials || [],
+    item.data.certifications || [],
+    item.body?.trim() || ''
+  ].flat().join(' ').toLowerCase();
+
   return {
     ...item,
-    teamMembersJson: JSON.stringify(itemTeamMembers)
+    teamMembersJson: JSON.stringify(itemTeamMembers),
+    searchBlob
   };
 }));
+
+// Unique category list (in weight order) for the catalogue filter chips
+const catalogueCategories = [...new Set(catalogueItems.map(item => item.data.category).filter(Boolean))];
 
 const title = activeScreen === 'home' 
   ? SITE.title 
@@ -311,13 +323,40 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
               <p class="section-intro">{t('catalogueSubtitle', lang)}</p>
             </div>
           )}
+          {(PARAMS.catalogue.show_search || PARAMS.catalogue.show_category_chips) && (
+            <div class="catalogue-filter-bar">
+              {PARAMS.catalogue.show_search && (
+                <div class="catalogue-search-bar" id="catalogue-search-bar">
+                  <i data-lucide="search" class="search-icon"></i>
+                  <input
+                    type="search"
+                    id="catalogue-search-input"
+                    placeholder={t('searchPlaceholder', lang)}
+                    autocomplete="off"
+                    enterkeyhint="search"
+                  />
+                  <button type="button" class="search-clear-btn hidden" id="catalogue-search-clear" aria-label="Clear search">
+                    <i data-lucide="x"></i>
+                  </button>
+                </div>
+              )}
+              {PARAMS.catalogue.show_category_chips && catalogueCategories.length > 0 && (
+                <div class="catalogue-chips-row" id="catalogue-chips-row" role="group" aria-label={lang === 'ta' ? 'வகை வடிகட்டி' : 'Category filter'}>
+                  <button type="button" class="catalogue-chip active" data-category="all">{t('allCategories', lang)}</button>
+                  {catalogueCategories.map((category) => (
+                    <button type="button" class="catalogue-chip" data-category={category}>{category}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           <div class="services-grid">
             {catalogueWithTeams.map((item, idx) => {
               const fileBaseName = item.id.split('/').pop()?.replace('.md', '') || item.id;
               const hasImages = item.data.images && item.data.images.length > 0;
-              
+
               return (
-                <div class="service-card shorts-card" id={`card-${fileBaseName}`} data-card-index={idx}>
+                <div class="service-card shorts-card" id={`card-${fileBaseName}`} data-card-index={idx} data-search={item.searchBlob} data-item-category={item.data.category}>
                   
                   {/* Background Image */}
                   {hasImages && PARAMS.catalogue.show_feature_images && (
@@ -387,6 +426,10 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                 </div>
               );
             })}
+          </div>
+          <div class="catalogue-no-results hidden" id="catalogue-no-results">
+            <i data-lucide="search-x" class="no-results-icon"></i>
+            <p>{t('noResults', lang)}</p>
           </div>
         </div>
       </section>

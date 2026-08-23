@@ -2895,3 +2895,152 @@ body {
     max-height: 85vh;
   }
 }
+/* ============================================
+   Catalogue Sticky Search & Category Chips
+   ============================================ */
+
+.catalogue-filter-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 18px;
+  background: linear-gradient(180deg, rgba(3, 7, 18, 0.94) 0%, rgba(3, 7, 18, 0.82) 100%);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.catalogue-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.catalogue-search-bar:focus-within {
+  border-color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.catalogue-search-bar .search-icon {
+  width: 18px;
+  height: 18px;
+  color: #cbd5e1;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+#catalogue-search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  color: #f9fafb;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+#catalogue-search-input::placeholder {
+  color: #94a3b8;
+}
+
+#catalogue-search-input::-webkit-search-cancel-button,
+#catalogue-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+.search-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #e5e7eb;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.search-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.search-clear-btn svg,
+.search-clear-btn i {
+  width: 14px;
+  height: 14px;
+}
+
+.catalogue-chips-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+
+.catalogue-chips-row::-webkit-scrollbar {
+  display: none;
+}
+
+.catalogue-chip {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.catalogue-chip:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.catalogue-chip.active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
+
+.service-card.filter-hidden {
+  display: none !important;
+}
+
+.catalogue-no-results {
+  min-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.catalogue-no-results .no-results-icon {
+  width: 42px;
+  height: 42px;
+  opacity: 0.6;
+}

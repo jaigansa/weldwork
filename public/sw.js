@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weldwork-cache-v2';
+const CACHE_NAME = 'weldwork-cache-v3';
 const ASSETS = [
   '/',
   '/css/app.css',

@@ -1319,6 +1319,74 @@ function initCustomRating() {
   }
 }
 
+function initCatalogueSearch() {
+  const screen = document.getElementById('screen-catalogue');
+  if (!screen) return;
+
+  const input = document.getElementById('catalogue-search-input');
+  const clearBtn = document.getElementById('catalogue-search-clear');
+  const chipsRow = document.getElementById('catalogue-chips-row');
+  const noResults = document.getElementById('catalogue-no-results');
+  const cards = screen.querySelectorAll('.service-card');
+
+  if (!input && !chipsRow) return;
+
+  let activeCategory = 'all';
+
+  const applyFilter = () => {
+    const query = (input ? input.value.trim().toLowerCase() : '');
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const matchesQuery = !query || (card.getAttribute('data-search') || '').includes(query);
+      const matchesCategory = activeCategory === 'all' || card.getAttribute('data-item-category') === activeCategory;
+      const visible = matchesQuery && matchesCategory;
+      card.classList.toggle('filter-hidden', !visible);
+      if (visible) visibleCount++;
+    });
+
+    if (noResults) {
+      noResults.classList.toggle('hidden', visibleCount > 0);
+    }
+    if (clearBtn) {
+      clearBtn.classList.toggle('hidden', !(input && input.value));
+    }
+  };
+
+  if (input) {
+    input.addEventListener('input', applyFilter);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && input.value) {
+        input.value = '';
+        applyFilter();
+      }
+    });
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      applyFilter();
+    });
+  }
+
+  if (chipsRow) {
+    chipsRow.querySelectorAll('.catalogue-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chipsRow.querySelectorAll('.catalogue-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        activeCategory = chip.getAttribute('data-category') || 'all';
+        applyFilter();
+      });
+    });
+  }
+
+  applyFilter();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   if (window.lucide && typeof window.lucide.createIcons === 'function') {
     window.lucide.createIcons();
@@ -1331,6 +1399,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initContactModal();
   initQuoteModal();
   initShortsCards();
+  initCatalogueSearch();
   initVideoFallback();
   initHoursToggle();
   initWorkerInfo();
