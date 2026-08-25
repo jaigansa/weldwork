@@ -321,6 +321,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
             <div class="section-header" style={`padding: 20px 24px; background-image: url('${PARAMS.catalogue.background_image}');`}>
               <h2>{t('catalogue', lang)}</h2>
               <p class="section-intro">{t('catalogueSubtitle', lang)}</p>
+              <div class="scroll-down-hint"><i data-lucide="chevrons-down"></i></div>
             </div>
           )}
           {PARAMS.catalogue.show_category_chips && catalogueCategories.length > 0 && (
@@ -422,6 +423,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
             <div class="section-header" style={`padding: 20px 24px; background-image: url('${PARAMS.teams.background_image}');`}>
               <h2>{t('team', lang)}</h2>
               <p class="section-intro">{t('teamsSubtitle', lang)}</p>
+              <div class="scroll-down-hint"><i data-lucide="chevrons-down"></i></div>
             </div>
           )}
           <div class="workers-grid">
@@ -475,6 +477,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
           <div class="section-header" style="padding: 20px 24px; background-image: url('/images/shop-bg.jpg');">
             <h2>{t('aboutUs', lang)}</h2>
             <p class="section-intro">{t('aboutSubtitle', lang)}</p>
+            <div class="scroll-down-hint"><i data-lucide="chevrons-down"></i></div>
           </div>
           <div class="markdown-content">
             {AboutContent && <AboutContent />}

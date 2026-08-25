@@ -1108,6 +1108,21 @@ body {
   word-break: break-word;
 }
 
+.scroll-down-hint {
+  margin-top: 24px;
+  color: #d1d5db;
+  opacity: 0.7;
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+.scroll-down-hint i {
+  width: 28px;
+  height: 28px;
+}
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
 .shorts-scroll .section-header {
   min-height: calc(100dvh - var(--header-height));
   scroll-snap-align: start;
