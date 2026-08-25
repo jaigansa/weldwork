@@ -1456,6 +1456,7 @@ function initGlobalSearch() {
     overlay.classList.add('hidden');
     overlay.setAttribute('aria-hidden', 'true');
     input.value = '';
+    input.blur();
   }
 
   function navigateTo(screen) {
@@ -1555,15 +1556,17 @@ function initGlobalSearch() {
           '<div class="gs-result-info"><div class="gs-result-title">' + escapeHtml(item.title) + '</div>' +
           (item.sub ? '<div class="gs-result-sub">' + escapeHtml(item.sub) + '</div>' : '') +
           '</div><i data-lucide="chevron-right" class="gs-result-arrow"></i>';
-        row.addEventListener('click', () => {
-          closeSearch();
+        row.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
           if (item.cardId) {
             const isService = item.cardId.startsWith('card-');
             navigateTo(isService ? 'catalogue' : 'teams');
-            setTimeout(() => scrollToCard('#' + item.cardId), 300);
+            setTimeout(() => scrollToCard('#' + item.cardId), 350);
           } else if (item.screen) {
             navigateTo(item.screen);
           }
+          setTimeout(closeSearch, 50);
         });
         group.appendChild(row);
       });
