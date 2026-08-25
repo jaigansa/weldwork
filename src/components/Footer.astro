@@ -12,7 +12,8 @@ const { activeScreen } = Astro.props;
       <span>Home</span>
     </button>
     
-    <div class="nav-tab-center">
+    <div class="nav-tab-center" id="nav-tab-center">
+      <div class="center-btn-longpress-ring"></div>
       <button class="center-btn-inner" id="app-center-btn" data-screen="catalogue" aria-label="Product Catalogue">
         <i data-lucide="layers" class="center-icon icon-catalogue"></i>
         <i data-lucide="arrow-up" class="center-icon icon-scroll-top"></i>
@@ -25,3 +26,23 @@ const { activeScreen } = Astro.props;
     </button>
   </nav>
 </footer>
+
+<div class="global-search-overlay hidden" id="global-search-overlay" aria-hidden="true" role="dialog" aria-label="Search">
+  <div class="global-search-panel">
+    <div class="global-search-header">
+      <div class="global-search-input-wrap">
+        <i data-lucide="search" class="global-search-icon"></i>
+        <input type="search" id="global-search-input" class="global-search-input" placeholder="Search services, team, pages…" autocomplete="off" enterkeyhint="search" />
+      </div>
+      <button class="global-search-close" id="global-search-close" aria-label="Close search">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="global-search-body" id="global-search-body">
+      <div class="global-search-empty" id="global-search-empty">
+        <i data-lucide="search" class="global-search-empty-icon"></i>
+        <p class="global-search-empty-text">Type to search everything</p>
+      </div>
+    </div>
+  </div>
+</div>

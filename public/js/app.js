@@ -653,6 +653,98 @@ async function initQuoteModal() {
     if (e.target === quoteModal) closeQuoteModal();
   });
 
+  const dropzone = document.getElementById('quote-dropzone');
+  const dropzonePrompt = document.getElementById('dropzone-prompt');
+  const previewsContainer = document.getElementById('quote-file-previews');
+  let dropzoneFiles = [];
+
+  function renderDropzonePreviews() {
+    if (!previewsContainer) return;
+    if (!dropzoneFiles.length) {
+      previewsContainer.classList.add('hidden');
+      previewsContainer.innerHTML = '';
+      if (dropzonePrompt) dropzonePrompt.style.display = '';
+      return;
+    }
+    if (dropzonePrompt) dropzonePrompt.style.display = 'none';
+    previewsContainer.classList.remove('hidden');
+    previewsContainer.innerHTML = '';
+    dropzoneFiles.forEach((file, i) => {
+      const item = document.createElement('div');
+      item.className = 'quote-preview-item';
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.alt = file.name;
+      item.appendChild(img);
+      const name = document.createElement('div');
+      name.className = 'quote-preview-name';
+      name.textContent = file.name;
+      item.appendChild(name);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'quote-preview-remove';
+      btn.textContent = '\u00d7';
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        URL.revokeObjectURL(img.src);
+        dropzoneFiles.splice(i, 1);
+        renderDropzonePreviews();
+      });
+      item.appendChild(btn);
+      previewsContainer.appendChild(item);
+    });
+    if (dropzoneFiles.length < parseInt(quotePhotosInput?.dataset.maxFiles || '4', 10)) {
+      const addMore = document.createElement('div');
+      addMore.className = 'dropzone-add-more';
+      addMore.innerHTML = '<i data-lucide="plus" class="dropzone-add-more-icon"></i><span class="dropzone-add-more-text">+</span>';
+      previewsContainer.appendChild(addMore);
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+  }
+
+  function addDropzoneFiles(fileList) {
+    const max = parseInt(quotePhotosInput?.dataset.maxFiles || '4', 10);
+    const incoming = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+    const available = max - dropzoneFiles.length;
+    const toAdd = incoming.slice(0, available);
+    dropzoneFiles = dropzoneFiles.concat(toAdd);
+    renderDropzonePreviews();
+  }
+
+  if (dropzone) {
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('is-dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('is-dragover');
+      });
+    });
+    dropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer?.files?.length) {
+        addDropzoneFiles(e.dataTransfer.files);
+      }
+    });
+  }
+
+  if (quotePhotosInput) {
+    quotePhotosInput.addEventListener('change', () => {
+      if (quotePhotosInput.files?.length) {
+        addDropzoneFiles(quotePhotosInput.files);
+        quotePhotosInput.value = '';
+      }
+    });
+  }
+
   if (quoteForm) {
     quoteForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -701,10 +793,8 @@ async function initQuoteModal() {
         return;
       }
 
-      let photoFiles = [];
-      if (quotePhotosInput && quotePhotosInput.files) {
-        photoFiles = Array.from(quotePhotosInput.files).slice(0, parseInt(quotePhotosInput.dataset.maxFiles || '4', 10));
-      }
+      const maxFiles = parseInt(quotePhotosInput?.dataset.maxFiles || '4', 10);
+      const photoFiles = dropzoneFiles.slice(0, maxFiles);
 
       if (quoteSubmitBtn) {
         quoteSubmitBtn.disabled = true;
@@ -737,6 +827,12 @@ async function initQuoteModal() {
           quoteFeedback.classList.remove('hidden');
         }
         quoteForm.reset();
+        dropzoneFiles = [];
+        if (previewsContainer) {
+          previewsContainer.innerHTML = '';
+          previewsContainer.classList.add('hidden');
+        }
+        if (dropzonePrompt) dropzonePrompt.style.display = '';
         setTimeout(() => {
           closeQuoteModal();
           if (quoteFeedback) quoteFeedback.classList.add('hidden');
@@ -1319,70 +1415,260 @@ function initCustomRating() {
   }
 }
 
+function initGlobalSearch() {
+  const overlay = document.getElementById('global-search-overlay');
+  const input = document.getElementById('global-search-input');
+  const closeBtn = document.getElementById('global-search-close');
+  const body = document.getElementById('global-search-body');
+  const emptyState = document.getElementById('global-search-empty');
+  const centerBtn = document.getElementById('app-center-btn');
+  const centerWrap = document.getElementById('nav-tab-center');
+  if (!overlay || !input || !centerBtn) return;
+
+  const lang = getLang();
+  const ta = lang === 'ta';
+
+  const PAGE_LINKS = [
+    { screen: 'home', title: ta ? 'முகப்பு' : 'Home', icon: 'home', sub: ta ? 'முகப்பு பக்கம்' : 'Home page' },
+    { screen: 'catalogue', title: ta ? 'பட்டியல்' : 'Catalogue', icon: 'layers', sub: ta ? 'சேவைகள் & விலைப்பட்டியல்' : 'Services & pricing' },
+    { screen: 'teams', title: ta ? 'குழு' : 'Team', icon: 'users', sub: ta ? 'எங்கள் குழு உறுப்பினர்கள்' : 'Our team members' },
+    { screen: 'about', title: ta ? 'எங்களைப் பற்றி' : 'About Us', icon: 'info', sub: ta ? 'நிறுவன விவரம்' : 'Company info' },
+  ];
+
+  const LONG_PRESS_MS = 500;
+  let pressTimer = null;
+  let didLongPress = false;
+  let isOverlayOpen = false;
+
+  function openSearch() {
+    if (isOverlayOpen) return;
+    isOverlayOpen = true;
+    overlay.classList.remove('hidden');
+    overlay.setAttribute('aria-hidden', 'false');
+    input.value = '';
+    renderResults('');
+    setTimeout(() => input.focus(), 100);
+  }
+
+  function closeSearch() {
+    if (!isOverlayOpen) return;
+    isOverlayOpen = false;
+    overlay.classList.add('hidden');
+    overlay.setAttribute('aria-hidden', 'true');
+    input.value = '';
+  }
+
+  function navigateTo(screen) {
+    const lang2 = window.location.pathname.startsWith('/ta') ? 'ta' : 'en';
+    if (screens[screen]) {
+      const path = `/${lang2}${screens[screen].path}`;
+      history.pushState({ screen }, '', path);
+      switchScreen(screen);
+    }
+  }
+
+  function scrollToCard(selector) {
+    const screen = document.querySelector('.screen-view.active');
+    if (!screen) return;
+    const card = screen.querySelector(selector);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.style.transition = 'box-shadow 0.3s';
+      card.style.boxShadow = '0 0 0 2px var(--accent-color)';
+      setTimeout(() => { card.style.boxShadow = ''; }, 1500);
+    }
+  }
+
+  function renderResults(query) {
+    if (!body) return;
+    const q = query.trim().toLowerCase();
+
+    const serviceCards = document.querySelectorAll('#screen-catalogue .service-card');
+    const workerCards = document.querySelectorAll('#screen-teams .worker-card');
+
+    let serviceResults = [];
+    if (q.length > 0) {
+      serviceCards.forEach(card => {
+        const search = (card.getAttribute('data-search') || '').toLowerCase();
+        if (search.includes(q)) {
+          const title = card.querySelector('.catalogue-quote-title')?.textContent?.trim() || '';
+          const cat = card.getAttribute('data-item-category') || '';
+          if (title) serviceResults.push({ title, sub: cat, cardId: card.id });
+        }
+      });
+    }
+
+    let teamResults = [];
+    if (q.length > 0) {
+      workerCards.forEach(card => {
+        const name = card.querySelector('.worker-header-meta h3')?.textContent?.trim() || '';
+        const role = card.querySelector('.worker-role')?.textContent?.trim() || '';
+        const combined = (name + ' ' + role).toLowerCase();
+        if (combined.includes(q)) {
+          teamResults.push({ title: name, sub: role, cardId: card.id });
+        }
+      });
+    }
+
+    let pageResults = [];
+    if (q.length > 0) {
+      PAGE_LINKS.forEach(p => {
+        if (p.title.toLowerCase().includes(q)) {
+          pageResults.push(p);
+        }
+      });
+    }
+
+    const totalResults = serviceResults.length + teamResults.length + pageResults.length;
+
+    if (emptyState) {
+      emptyState.classList.toggle('hidden', q.length === 0);
+    }
+
+    const existingGroups = body.querySelectorAll('.gs-group, .gs-no-results');
+    existingGroups.forEach(el => el.remove());
+
+    if (q.length === 0) {
+      body.scrollTop = 0;
+      return;
+    }
+
+    if (totalResults === 0) {
+      const noRes = document.createElement('div');
+      noRes.className = 'gs-no-results';
+      noRes.innerHTML = '<i data-lucide="search-x" class="gs-no-results-icon"></i><span class="gs-no-results-text">' + (ta ? 'நபரங்கள் கிடைக்கவில்லை' : 'No results found') + '</span>';
+      body.appendChild(noRes);
+      if (window.lucide?.createIcons) window.lucide.createIcons();
+      return;
+    }
+
+    function buildGroup(label, icon, items) {
+      if (items.length === 0) return null;
+      const group = document.createElement('div');
+      group.className = 'gs-group';
+      group.innerHTML = '<div class="gs-group-label">' + label + '</div>';
+      items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'gs-result';
+        row.innerHTML =
+          '<div class="gs-result-icon"><i data-lucide="' + icon + '"></i></div>' +
+          '<div class="gs-result-info"><div class="gs-result-title">' + escapeHtml(item.title) + '</div>' +
+          (item.sub ? '<div class="gs-result-sub">' + escapeHtml(item.sub) + '</div>' : '') +
+          '</div><i data-lucide="chevron-right" class="gs-result-arrow"></i>';
+        row.addEventListener('click', () => {
+          closeSearch();
+          if (item.cardId) {
+            const isService = item.cardId.startsWith('card-');
+            navigateTo(isService ? 'catalogue' : 'teams');
+            setTimeout(() => scrollToCard('#' + item.cardId), 300);
+          } else if (item.screen) {
+            navigateTo(item.screen);
+          }
+        });
+        group.appendChild(row);
+      });
+      return group;
+    }
+
+    const serviceGroup = buildGroup(ta ? 'சேவைகள்' : 'Services', 'wrench', serviceResults);
+    const teamGroup = buildGroup(ta ? 'குழு' : 'Team', 'users', teamResults);
+    const pageGroup = buildGroup(ta ? 'பக்கங்கள்' : 'Pages', 'file-text', pageResults);
+
+    if (serviceGroup) body.appendChild(serviceGroup);
+    if (teamGroup) body.appendChild(teamGroup);
+    if (pageGroup) body.appendChild(pageGroup);
+
+    if (window.lucide?.createIcons) window.lucide.createIcons();
+  }
+
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  centerBtn.addEventListener('pointerdown', (e) => {
+    if (centerBtn.classList.contains('is-scroll-top')) return;
+    didLongPress = false;
+    if (centerWrap) centerWrap.classList.add('is-long-pressing');
+    centerBtn.classList.add('is-long-press');
+    pressTimer = setTimeout(() => {
+      didLongPress = true;
+      centerBtn.classList.remove('is-long-press');
+      openSearch();
+    }, LONG_PRESS_MS);
+  });
+
+  const cancelPress = () => {
+    clearTimeout(pressTimer);
+    pressTimer = null;
+    centerBtn.classList.remove('is-long-press');
+    if (centerWrap) centerWrap.classList.remove('is-long-pressing');
+  };
+
+  centerBtn.addEventListener('pointerup', cancelPress);
+  centerBtn.addEventListener('pointercancel', cancelPress);
+  centerBtn.addEventListener('pointerleave', cancelPress);
+
+  centerBtn.addEventListener('click', (e) => {
+    if (didLongPress) {
+      e.preventDefault();
+      e.stopPropagation();
+      didLongPress = false;
+    }
+  }, true);
+
+  if (closeBtn) closeBtn.addEventListener('click', closeSearch);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeSearch();
+  });
+
+  input.addEventListener('input', () => renderResults(input.value));
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSearch();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOverlayOpen) closeSearch();
+  });
+}
+
 function initCatalogueSearch() {
   const screen = document.getElementById('screen-catalogue');
   if (!screen) return;
 
-  const input = document.getElementById('catalogue-search-input');
-  const clearBtn = document.getElementById('catalogue-search-clear');
   const chipsRow = document.getElementById('catalogue-chips-row');
   const noResults = document.getElementById('catalogue-no-results');
   const cards = screen.querySelectorAll('.service-card');
 
-  if (!input && !chipsRow) return;
+  if (!chipsRow) return;
 
   let activeCategory = 'all';
 
   const applyFilter = () => {
-    const query = (input ? input.value.trim().toLowerCase() : '');
     let visibleCount = 0;
 
     cards.forEach(card => {
-      const matchesQuery = !query || (card.getAttribute('data-search') || '').includes(query);
       const matchesCategory = activeCategory === 'all' || card.getAttribute('data-item-category') === activeCategory;
-      const visible = matchesQuery && matchesCategory;
-      card.classList.toggle('filter-hidden', !visible);
-      if (visible) visibleCount++;
+      card.classList.toggle('filter-hidden', !matchesCategory);
+      if (matchesCategory) visibleCount++;
     });
 
     if (noResults) {
       noResults.classList.toggle('hidden', visibleCount > 0);
     }
-    if (clearBtn) {
-      clearBtn.classList.toggle('hidden', !(input && input.value));
-    }
   };
 
-  if (input) {
-    input.addEventListener('input', applyFilter);
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && input.value) {
-        input.value = '';
-        applyFilter();
-      }
-    });
-  }
-
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
-      if (input) {
-        input.value = '';
-        input.focus();
-      }
+  chipsRow.querySelectorAll('.catalogue-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      chipsRow.querySelectorAll('.catalogue-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeCategory = chip.getAttribute('data-category') || 'all';
       applyFilter();
     });
-  }
-
-  if (chipsRow) {
-    chipsRow.querySelectorAll('.catalogue-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        chipsRow.querySelectorAll('.catalogue-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        activeCategory = chip.getAttribute('data-category') || 'all';
-        applyFilter();
-      });
-    });
-  }
+  });
 
   applyFilter();
 }
@@ -1398,6 +1684,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDetailsDrawer();
   initContactModal();
   initQuoteModal();
+  initGlobalSearch();
   initShortsCards();
   initCatalogueSearch();
   initVideoFallback();
