@@ -3159,9 +3159,10 @@ body {
   flex-shrink: 0;
   pointer-events: none;
 }
-.global-search-input {
+.global-search-input-wrap .global-search-input {
   flex: 1;
   min-width: 0;
+  width: 100%;
   background: transparent;
   border: none;
   outline: none;
@@ -3172,13 +3173,14 @@ body {
   font-size: 0.95rem;
   padding: 0;
   margin: 0;
+  box-shadow: none;
 }
-.global-search-input::placeholder {
+.global-search-input-wrap .global-search-input::placeholder {
   color: var(--text-secondary);
   opacity: 0.7;
 }
-.global-search-input::-webkit-search-cancel-button,
-.global-search-input::-webkit-search-decoration {
+.global-search-input-wrap .global-search-input::-webkit-search-cancel-button,
+.global-search-input-wrap .global-search-input::-webkit-search-decoration {
   -webkit-appearance: none;
   appearance: none;
   display: none;
