@@ -3164,10 +3164,14 @@ body {
   min-width: 0;
   background: transparent;
   border: none;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
   color: var(--text-primary);
   font-family: 'Outfit', sans-serif;
   font-size: 0.95rem;
-  outline: none;
+  padding: 0;
+  margin: 0;
 }
 .global-search-input::placeholder {
   color: var(--text-secondary);
