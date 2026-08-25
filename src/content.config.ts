@@ -56,7 +56,10 @@ const teamsCollection = defineCollection({
     phone: z.string().optional(),
     phone_clean: z.string().optional(),
     whatsapp: z.string().optional(),
-    email: z.string().optional()
+    email: z.string().optional(),
+    website: z.string().optional(),
+    youtube: z.string().optional(),
+    instagram: z.string().optional()
   })
 });
 

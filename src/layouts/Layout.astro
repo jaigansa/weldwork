@@ -81,6 +81,9 @@ const title = activeScreen === 'home'
       ? `${t('team', lang)} | ${SITE.title}`
       : `${t('aboutUs', lang)} | ${SITE.title}`;
 
+const canonicalURL = new URL(Astro.url.pathname, SITE.baseURL).href;
+const ogImage = new URL('/images/shop-bg.jpg', SITE.baseURL).href;
+
 // Localized helper to translate schedule days
 const translateDays = (days: string, currentLang: 'en' | 'ta') => {
   if (currentLang === 'en') return days;
@@ -132,10 +135,27 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
   
   <title>{title}</title>
   <meta name="description" content={SITE.description}>
-  
-  <link rel="manifest" href="/manifest.json">
+  <link rel="canonical" href={canonicalURL}>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={SITE.description}>
+  <meta property="og:image" content={ogImage}>
+  <meta property="og:url" content={canonicalURL}>
+  <meta property="og:site_name" content={SITE.title}>
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content={title}>
+  <meta name="twitter:description" content={SITE.description}>
+  <meta name="twitter:image" content={ogImage}>
+
+  <!-- Favicons -->
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
   
   <link rel="stylesheet" href="/css/app.css">
   
@@ -236,7 +256,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                       </a>
                     )}
                     
-                    <button class="compact-btn btn-products" data-company-slug={card.id.replace(/^[a-z]{2}\//, '')} aria-label={`View products for ${card.data.title}`}>
+                    <button class="compact-btn btn-products" data-company-slug={card.id.replace(/^[a-z]{2}\//, '')} data-company-logo={card.data.logo || ''} data-company-name={card.data.title} aria-label={`View products for ${card.data.title}`}>
                       <i data-lucide="package" class="compact-btn-icon"></i>
                       <span>{lang === 'ta' ? 'தயாரிப்புகள்' : 'Products'}</span>
                     </button>
@@ -330,8 +350,12 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
           <div class="company-filter-bar hidden" id="company-filter-bar">
             <button class="company-filter-back" id="company-filter-back" aria-label={lang === 'ta' ? 'அனைத்து தயாரிப்புகளுக்கும் திரும்பு' : 'Back to all products'}>
               <i data-lucide="arrow-left" class="company-filter-back-icon"></i>
-              <span id="company-filter-name"></span>
             </button>
+            <img class="company-filter-logo" id="company-filter-logo" src="" alt="" />
+            <div class="company-filter-info">
+              <span class="company-filter-name" id="company-filter-name"></span>
+              <span class="company-filter-count" id="company-filter-count"></span>
+            </div>
           </div>
 
           <div class="services-grid">
@@ -447,6 +471,29 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                   {PARAMS.teams.show_worker_bio && (
                     <div class="worker-bio">
                       <member.ContentComponent />
+                    </div>
+                  )}
+
+                  {(member.data.website || member.data.youtube || member.data.instagram) && (
+                    <div class="worker-social-handles">
+                      {member.data.website && (
+                        <a class="social-handle-item" href={member.data.website} target="_blank" rel="noopener noreferrer" aria-label="Website">
+                          <i data-lucide="globe" class="social-handle-icon"></i>
+                          <span class="social-handle-label">Website</span>
+                        </a>
+                      )}
+                      {member.data.youtube && (
+                        <a class="social-handle-item" href={member.data.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                          <i data-lucide="youtube" class="social-handle-icon"></i>
+                          <span class="social-handle-label">YouTube</span>
+                        </a>
+                      )}
+                      {member.data.instagram && (
+                        <a class="social-handle-item" href={member.data.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                          <i data-lucide="instagram" class="social-handle-icon"></i>
+                          <span class="social-handle-label">Instagram</span>
+                        </a>
+                      )}
                     </div>
                   )}
                 </div>

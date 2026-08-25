@@ -1,8 +1,45 @@
 ---
+import { SITE } from '../config';
 interface Props {
   activeScreen: 'home' | 'catalogue' | 'teams';
 }
 const { activeScreen } = Astro.props;
+const lang = Astro.url.pathname.startsWith('/ta') ? 'ta' : 'en';
+
+const F = lang === 'ta'
+  ? {
+      tagline: "பிரீமியம் உலோக வேலைப்பாடு & தொழில்துறை வெல்டிங் தீர்வுகள்",
+      quickLinks: "விரைவு இணைப்புகள்",
+      home: "முகப்பு",
+      catalogue: "பட்டியல்",
+      team: "குழு",
+      about: "எங்களைப் பற்றி",
+      contact: "தொடர்பு",
+      social: "சமூகம்",
+      rights: "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
+      privacy: "தனியுரிமைக் கொள்கை",
+      terms: "சேவை விதிமுறைகள்"
+    }
+  : {
+      tagline: SITE.description,
+      quickLinks: "Quick Links",
+      home: "Home",
+      catalogue: "Catalogue",
+      team: "Team",
+      about: "About Us",
+      contact: "Contact",
+      social: "Social",
+      rights: "All rights reserved.",
+      privacy: "Privacy Policy",
+      terms: "Terms of Service"
+    };
+
+// Site data for footer
+const SITE_DATA = {
+  address: "Irumbuliyur, Chennai - 600059, Tamil Nadu, India",
+  phone: "+91 98405 62997",
+  email: "contact@weldwork.in",
+};
 ---
 <footer class="app-nav-wrapper">
   <div class="app-nav-bg"></div>
@@ -25,6 +62,72 @@ const { activeScreen } = Astro.props;
       <span>Team</span>
     </button>
   </nav>
+</footer>
+
+<footer class="app-footer">
+  <div class="footer-container">
+    <div class="footer-about">
+      <div class="footer-logo">
+        <img src="/icons/icon-192.png" alt="WeldWork Logo" class="footer-logo-img" />
+        <span class="footer-logo-text">WeldWork</span>
+      </div>
+      <p class="footer-tagline">{F.tagline}</p>
+    </div>
+    
+    <div class="footer-links">
+      <h4>{F.quickLinks}</h4>
+      <ul>
+        <li><a href={`/${lang}/`} aria-label={F.home}>{F.home}</a></li>
+        <li><a href={`/${lang}/catalogue/`} aria-label={F.catalogue}>{F.catalogue}</a></li>
+        <li><a href={`/${lang}/teams/`} aria-label={F.team}>{F.team}</a></li>
+        <li><a href={`/${lang}/about/`} aria-label={F.about}>{F.about}</a></li>
+      </ul>
+    </div>
+    
+    <div class="footer-contact">
+      <h4>{F.contact}</h4>
+      <ul>
+        <li>
+          <i data-lucide="phone" class="footer-icon"></i>
+          <span>{SITE_DATA.phone}</span>
+        </li>
+        <li>
+          <i data-lucide="mail" class="footer-icon"></i>
+          <a href={`mailto:${SITE_DATA.email}`} aria-label="Email">{SITE_DATA.email}</a>
+        </li>
+        <li>
+          <i data-lucide="map-pin" class="footer-icon"></i>
+          <span>{SITE_DATA.address}</span>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="footer-social">
+      <h4>{F.social}</h4>
+      <ul>
+        <li>
+          <a href="#" aria-label="Website">
+            <i data-lucide="globe" class="footer-social-icon"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" aria-label="YouTube">
+            <i data-lucide="youtube" class="footer-social-icon"></i>
+          </a>
+        </li>
+        <li>
+          <a href="#" aria-label="Instagram">
+            <i data-lucide="instagram" class="footer-social-icon"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="footer-bottom">
+    <p class="footer-copyright">© {new Date().getFullYear()} WeldWork. {F.rights}</p>
+    <p class="footer-policy">{F.privacy} | {F.terms}</p>
+  </div>
 </footer>
 
 <div class="global-search-overlay hidden" id="global-search-overlay" aria-hidden="true" role="dialog" aria-label="Search">

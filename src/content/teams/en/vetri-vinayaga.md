@@ -9,6 +9,9 @@ phone: "+91 98405 62997"
 phone_clean: "919840562997"
 whatsapp: "919840562997"
 email: "newboltnutshop@gmail.com"
+website: ""
+youtube: ""
+instagram: ""
 ---
 
 Profile coming soon. Joining the WeldWork team for on-site field repairs, fastener technical support, and workshop hardware coordination.

@@ -20,7 +20,7 @@ teams:
 images:
   - "/images/welding-2.jpg"
   - "/images/shop-bg.jpg"
-youtube_url: "https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
+youtube_url: ""
 ---
 
 Mobile welding rigs equipped with on-board diesel generators, heavy-duty MIG/Arc equipment, and oxy-fuel cutting torches for rapid on-site breakdown support across Chennai and Kanchipuram districts.

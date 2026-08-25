@@ -46,11 +46,9 @@ function switchScreen(screenKey) {
     if (el) {
       if (key === normalizedKey) {
         el.classList.add('active');
+        checkScrollPosition(currentScrollTop());
         const container = el.querySelector('.screen-scroll-container');
-        if (container) {
-          checkScrollPosition(container.scrollTop);
-          if (container._indicator) container._indicator.classList.add('visible');
-        }
+        if (container && container._indicator) container._indicator.classList.add('visible');
       } else {
         el.classList.remove('active');
         const container = el.querySelector('.screen-scroll-container');
@@ -73,6 +71,30 @@ function switchScreen(screenKey) {
   }
 }
 
+// Desktop uses window scroll (containers are static flow); mobile uses inner container.
+function isDesktopLayout() {
+  return window.matchMedia('(min-width: 768px)').matches;
+}
+
+function currentScrollTop() {
+  if (!isDesktopLayout()) {
+    const container = document.querySelector('.screen-view.active .screen-scroll-container');
+    if (container) return container.scrollTop;
+  }
+  return window.scrollY || document.documentElement.scrollTop || 0;
+}
+
+function smoothScrollToTop() {
+  if (!isDesktopLayout()) {
+    const container = document.querySelector('.screen-view.active .screen-scroll-container');
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function checkScrollPosition(scrollTop) {
   const centerBtn = document.getElementById('app-center-btn');
   if (!centerBtn) return;
@@ -93,10 +115,7 @@ function initRouting() {
       if (button === centerBtn && centerBtn.classList.contains('is-scroll-top')) {
         e.preventDefault();
         e.stopPropagation();
-        const activeScreenContainer = document.querySelector('.screen-view.active .screen-scroll-container');
-        if (activeScreenContainer) {
-          activeScreenContainer.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        smoothScrollToTop();
         return;
       }
 
@@ -172,11 +191,14 @@ function initScrollWatcher() {
     }, { passive: true });
   });
 
-  requestAnimationFrame(() => {
-    const activeContainer = document.querySelector('.screen-view.active .screen-scroll-container');
-    if (activeContainer) {
-      checkScrollPosition(activeContainer.scrollTop);
+  window.addEventListener('scroll', () => {
+    if (isDesktopLayout()) {
+      checkScrollPosition(currentScrollTop());
     }
+  }, { passive: true });
+
+  requestAnimationFrame(() => {
+    checkScrollPosition(currentScrollTop());
   });
 }
 
@@ -1667,6 +1689,18 @@ function initCompanyFilter() {
   const params = new URLSearchParams(window.location.search);
   const companySlug = params.get('company');
 
+  // Build slug -> {logo, name} map from rendered buttons so back/popstate
+  // and direct ?company= loads still show correct company info.
+  window.__companyMeta = {};
+  document.querySelectorAll('.btn-products').forEach(btn => {
+    const slug = btn.getAttribute('data-company-slug');
+    if (!slug) return;
+    window.__companyMeta[slug] = {
+      logo: btn.getAttribute('data-company-logo') || '',
+      name: btn.getAttribute('data-company-name') || slug
+    };
+  });
+
   document.querySelectorAll('.btn-products').forEach(btn => {
     btn.addEventListener('click', () => {
       const slug = btn.getAttribute('data-company-slug');
@@ -1694,7 +1728,9 @@ function initCompanyFilter() {
 
 function applyCompanyFilter(slug) {
   const filterBar = document.getElementById('company-filter-bar');
+  const filterLogo = document.getElementById('company-filter-logo');
   const filterName = document.getElementById('company-filter-name');
+  const filterCount = document.getElementById('company-filter-count');
   const filterBack = document.getElementById('company-filter-back');
   const cards = document.querySelectorAll('#screen-catalogue .service-card');
   let emptyMsg = document.getElementById('company-empty-msg');
@@ -1708,13 +1744,37 @@ function applyCompanyFilter(slug) {
   }
 
   const lang = getLang();
-  if (filterBar && filterName) {
+  const tCount = lang === 'ta' ? 'தயாரிப்புகள்' : 'products';
+
+  // Count matching products directly from the DOM (single source of truth)
+  let matchCount = 0;
+  cards.forEach(card => {
+    if (slug && card.getAttribute('data-company') === slug) matchCount++;
+  });
+
+  if (filterBar) {
     if (slug) {
       filterBar.classList.remove('hidden');
-      filterName.textContent = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      const meta = (window.__companyMeta && window.__companyMeta[slug]) || {};
+      if (filterLogo) {
+        const logo = meta.logo || '';
+        filterLogo.alt = meta.name || '';
+        if (logo) {
+          filterLogo.src = logo;
+          filterLogo.style.display = 'block';
+        } else {
+          filterLogo.removeAttribute('src');
+          filterLogo.style.display = 'none';
+        }
+      }
+      if (filterName) {
+        filterName.textContent = meta.name || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      }
+      if (filterCount) {
+        filterCount.textContent = `${matchCount} ${tCount}`;
+      }
     } else {
       filterBar.classList.add('hidden');
-      filterName.textContent = '';
     }
   }
 
@@ -1724,6 +1784,7 @@ function applyCompanyFilter(slug) {
 
   let visibleCount = 0;
   cards.forEach(card => {
+    card.classList.add('filter-animate');
     const cardCompany = card.getAttribute('data-company');
     const show = !slug || cardCompany === slug;
     card.classList.toggle('filter-hidden', !show);
