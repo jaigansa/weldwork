@@ -692,6 +692,82 @@ body {
   color: #f59e0b;
 }
 
+.compact-btn.btn-products {
+  color: #fff;
+}
+
+.compact-btn.btn-products:hover {
+  color: var(--accent-color);
+}
+
+.service-card.filter-hidden {
+  display: none !important;
+}
+
+.company-empty-msg {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-secondary, #9ca3af);
+  font-size: 0.95rem;
+}
+
+.company-empty-msg.hidden {
+  display: none;
+}
+
+.company-filter-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  gap: 0;
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.company-filter-bar.hidden {
+  display: none;
+}
+
+.company-filter-back {
+  position: fixed;
+  top: 70px;
+  left: 16px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(17, 24, 39, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.company-filter-back:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.company-filter-back-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.company-filter-back.hidden {
+  display: none;
+}
+
 .shops-container {
   display: flex;
   flex-direction: column;
@@ -3053,71 +3129,6 @@ body {
     max-height: 85vh;
   }
 }
-/* ============================================
-   Catalogue Category Chips
-   ============================================ */
-
-.catalogue-chips-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-bottom: 2px;
-}
-
-.catalogue-chips-row::-webkit-scrollbar {
-  display: none;
-}
-
-.catalogue-chip {
-  flex-shrink: 0;
-  padding: 7px 16px;
-  border-radius: 999px;
-  font-family: inherit;
-  font-size: 0.78rem;
-  font-weight: 600;
-  white-space: nowrap;
-  color: #e5e7eb;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.catalogue-chip:hover {
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.catalogue-chip.active {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
-  color: #fff;
-}
-
-.service-card.filter-hidden {
-  display: none !important;
-}
-
-.catalogue-no-results {
-  min-height: 55vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 40px 24px;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-}
-
-.catalogue-no-results .no-results-icon {
-  width: 42px;
-  height: 42px;
-  opacity: 0.6;
-}
-
 /* ============================================
    Global Search Overlay
    ============================================ */

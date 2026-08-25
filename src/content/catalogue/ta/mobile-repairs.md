@@ -1,6 +1,7 @@
 ---
 title: "தளத்திலான மொபைல் வெல்டிங் & பழுதுபார்ப்பு"
 category: "கள சேவை"
+company: "jai-sri-ram-industry"
 weight: 3
 rate: "₹1,500/மணிக்கு"
 rate_type: "தொடக்க கள சேவை கட்டணம்"

@@ -144,6 +144,9 @@ function initRouting() {
   window.addEventListener('popstate', (e) => {
     if (e.state && e.state.screen && screens[e.state.screen]) {
       switchScreen(e.state.screen);
+      if (e.state.screen === 'catalogue') {
+        applyCompanyFilter(e.state.company || null);
+      }
     } else {
       switchScreen('home');
     }
@@ -1638,44 +1641,6 @@ function initGlobalSearch() {
   });
 }
 
-function initCatalogueSearch() {
-  const screen = document.getElementById('screen-catalogue');
-  if (!screen) return;
-
-  const chipsRow = document.getElementById('catalogue-chips-row');
-  const noResults = document.getElementById('catalogue-no-results');
-  const cards = screen.querySelectorAll('.service-card');
-
-  if (!chipsRow) return;
-
-  let activeCategory = 'all';
-
-  const applyFilter = () => {
-    let visibleCount = 0;
-
-    cards.forEach(card => {
-      const matchesCategory = activeCategory === 'all' || card.getAttribute('data-item-category') === activeCategory;
-      card.classList.toggle('filter-hidden', !matchesCategory);
-      if (matchesCategory) visibleCount++;
-    });
-
-    if (noResults) {
-      noResults.classList.toggle('hidden', visibleCount > 0);
-    }
-  };
-
-  chipsRow.querySelectorAll('.catalogue-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      chipsRow.querySelectorAll('.catalogue-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      activeCategory = chip.getAttribute('data-category') || 'all';
-      applyFilter();
-    });
-  });
-
-  applyFilter();
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   if (window.lucide && typeof window.lucide.createIcons === 'function') {
     window.lucide.createIcons();
@@ -1689,13 +1654,89 @@ document.addEventListener('DOMContentLoaded', () => {
   initQuoteModal();
   initGlobalSearch();
   initShortsCards();
-  initCatalogueSearch();
   initVideoFallback();
   initHoursToggle();
   initWorkerInfo();
   initVideoLightbox();
   initCustomRating();
+  initCompanyFilter();
 });
+
+function initCompanyFilter() {
+  const lang = getLang();
+  const params = new URLSearchParams(window.location.search);
+  const companySlug = params.get('company');
+
+  document.querySelectorAll('.btn-products').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const slug = btn.getAttribute('data-company-slug');
+      if (!slug) return;
+      const path = `/${lang}/catalogue/`;
+      history.pushState({ screen: 'catalogue', company: slug }, '', `${path}?company=${slug}`);
+      applyCompanyFilter(slug);
+      switchScreen('catalogue');
+    });
+  });
+
+  const filterBack = document.getElementById('company-filter-back');
+  if (filterBack) {
+    filterBack.addEventListener('click', () => {
+      const path = `/${lang}/catalogue/`;
+      history.pushState({ screen: 'catalogue' }, '', path);
+      applyCompanyFilter(null);
+    });
+  }
+
+  if (companySlug) {
+    applyCompanyFilter(companySlug);
+  }
+}
+
+function applyCompanyFilter(slug) {
+  const filterBar = document.getElementById('company-filter-bar');
+  const filterName = document.getElementById('company-filter-name');
+  const filterBack = document.getElementById('company-filter-back');
+  const cards = document.querySelectorAll('#screen-catalogue .service-card');
+  let emptyMsg = document.getElementById('company-empty-msg');
+
+  if (!emptyMsg) {
+    emptyMsg = document.createElement('div');
+    emptyMsg.id = 'company-empty-msg';
+    emptyMsg.className = 'company-empty-msg hidden';
+    const grid = document.querySelector('#screen-catalogue .services-grid');
+    if (grid) grid.parentNode.insertBefore(emptyMsg, grid.nextSibling);
+  }
+
+  const lang = getLang();
+  if (filterBar && filterName) {
+    if (slug) {
+      filterBar.classList.remove('hidden');
+      filterName.textContent = slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    } else {
+      filterBar.classList.add('hidden');
+      filterName.textContent = '';
+    }
+  }
+
+  if (filterBack) {
+    filterBack.classList.toggle('hidden', !slug);
+  }
+
+  let visibleCount = 0;
+  cards.forEach(card => {
+    const cardCompany = card.getAttribute('data-company');
+    const show = !slug || cardCompany === slug;
+    card.classList.toggle('filter-hidden', !show);
+    if (show) visibleCount++;
+  });
+
+  if (slug) {
+    emptyMsg.textContent = lang === 'ta' ? 'இந்த நிறுவனத்திற்கு தயாரிப்புகள் இல்லை' : 'No products found for this company';
+    emptyMsg.classList.toggle('hidden', visibleCount > 0);
+  } else {
+    emptyMsg.classList.add('hidden');
+  }
+}
 
 function extractYouTubeId(url) {
   if (!url) return null;

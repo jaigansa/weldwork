@@ -1,6 +1,7 @@
 ---
 title: "On-Site Mobile Welding & Field Repairs"
 category: "Field Service"
+company: "jai-sri-ram-industry"
 weight: 3
 rate: "₹1,500/hrs"
 rate_type: "Starting Field Service Rate"

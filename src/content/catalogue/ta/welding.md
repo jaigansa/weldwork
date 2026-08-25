@@ -1,6 +1,7 @@
 ---
 title: "துல்லிய ஆர்க் வெல்டிங்"
 category: "தனிப்பயன் உலோக வேலைப்பாடு"
+company: "sri-jaiganesh-industry"
 weight: 1
 rate: "₹1,200"
 rate_type: "தொடக்க உழைப்பு விகிதம்"

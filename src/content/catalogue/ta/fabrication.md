@@ -1,6 +1,7 @@
 ---
 title: "கனரக கட்டமைப்பு எஃகு தயாரிப்பு"
 category: "தொழில்துறை உற்பத்தி"
+company: "sri-jaiganesh-industry"
 weight: 2
 rate: "₹4,500"
 rate_type: "தொடக்க அலகு தயாரிப்பு வீதம்"

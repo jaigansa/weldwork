@@ -30,6 +30,7 @@ const catalogueCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     category: z.string(),
+    company: z.string(),
     weight: z.number().optional(),
     rate: z.string(),
     rate_type: z.string().optional(),

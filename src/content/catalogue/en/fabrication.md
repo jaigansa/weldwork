@@ -1,6 +1,7 @@
 ---
 title: "Heavy Structural Steel Fabrication"
 category: "Industrial Manufacturing"
+company: "sri-jaiganesh-industry"
 weight: 2
 rate: "₹4,500"
 rate_type: "Starting Unit Fabrication Rate"

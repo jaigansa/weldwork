@@ -1,6 +1,7 @@
 ---
 title: "Precision ARC Welding"
 category: "Custom Metalwork"
+company: "sri-jaiganesh-industry"
 weight: 1
 rate: "₹1,200"
 rate_type: "Starting Labour Rate"

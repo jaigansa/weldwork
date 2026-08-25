@@ -73,9 +73,6 @@ const catalogueWithTeams = await Promise.all(catalogueItems.map(async (item) => 
   };
 }));
 
-// Unique category list (in weight order) for the catalogue filter chips
-const catalogueCategories = [...new Set(catalogueItems.map(item => item.data.category).filter(Boolean))];
-
 const title = activeScreen === 'home' 
   ? SITE.title 
   : activeScreen === 'catalogue' 
@@ -239,6 +236,11 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                       </a>
                     )}
                     
+                    <button class="compact-btn btn-products" data-company-slug={card.id.replace(/^[a-z]{2}\//, '')} aria-label={`View products for ${card.data.title}`}>
+                      <i data-lucide="package" class="compact-btn-icon"></i>
+                      <span>{lang === 'ta' ? 'தயாரிப்புகள்' : 'Products'}</span>
+                    </button>
+
                     <button class="compact-btn btn-rating-action" data-shop-id={card.id.replace(/^[a-z]{2}\//, '')} data-shop-name={card.data.title} aria-label={`Rate ${card.data.title}`}>
                       <i data-lucide="star" class="compact-btn-icon"></i>
                       <span>{t('rating', lang)}</span>
@@ -324,21 +326,21 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
               <div class="scroll-down-hint"><i data-lucide="chevrons-down"></i></div>
             </div>
           )}
-          {PARAMS.catalogue.show_category_chips && catalogueCategories.length > 0 && (
-            <div class="catalogue-chips-row" id="catalogue-chips-row" role="group" aria-label={lang === 'ta' ? 'வகை வடிகட்டி' : 'Category filter'}>
-              <button type="button" class="catalogue-chip active" data-category="all">{t('allCategories', lang)}</button>
-              {catalogueCategories.map((category) => (
-                <button type="button" class="catalogue-chip" data-category={category}>{category}</button>
-              ))}
-            </div>
-          )}
+
+          <div class="company-filter-bar hidden" id="company-filter-bar">
+            <button class="company-filter-back" id="company-filter-back" aria-label={lang === 'ta' ? 'அனைத்து தயாரிப்புகளுக்கும் திரும்பு' : 'Back to all products'}>
+              <i data-lucide="arrow-left" class="company-filter-back-icon"></i>
+              <span id="company-filter-name"></span>
+            </button>
+          </div>
+
           <div class="services-grid">
             {catalogueWithTeams.map((item, idx) => {
               const fileBaseName = item.id.split('/').pop()?.replace('.md', '') || item.id;
               const hasImages = item.data.images && item.data.images.length > 0;
 
               return (
-                <div class="service-card shorts-card" id={`card-${fileBaseName}`} data-card-index={idx} data-search={item.searchBlob} data-item-category={item.data.category}>
+                <div class="service-card shorts-card" id={`card-${fileBaseName}`} data-card-index={idx} data-search={item.searchBlob} data-item-category={item.data.category} data-company={item.data.company}>
                   
                   {/* Background Image */}
                   {hasImages && PARAMS.catalogue.show_feature_images && (
@@ -409,10 +411,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
               );
             })}
           </div>
-          <div class="catalogue-no-results hidden" id="catalogue-no-results">
-            <i data-lucide="search-x" class="no-results-icon"></i>
-            <p>{t('noResults', lang)}</p>
-          </div>
+
         </div>
       </section>
 
@@ -428,7 +427,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
           )}
           <div class="workers-grid">
             {teamsWithContent.map((member, idx) => (
-              <div class="worker-card shorts-card" data-card-index={idx}>
+              <div class="worker-card shorts-card" id={`worker-${member.id.split('/').pop()?.replace('.md', '') || member.id}`} data-card-index={idx}>
                 <div class="worker-media">
                   <img src={member.data.photo || "/icons/icon-192.png"} alt={member.data.title} class="worker-photo" />
                 </div>
