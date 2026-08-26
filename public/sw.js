@@ -1,10 +1,13 @@
-const CACHE_NAME = 'weldwork-cache-v4';
+const CACHE_NAME = 'weldwork-cache-v5';
+// Must match ASSET_VER in Layout.astro
+const VER = '2026-08-26-1';
 const ASSETS = [
   '/',
-  '/css/app.css',
-  '/js/app.js',
+  `/css/app.css?v=${VER}`,
+  `/js/app.js?v=${VER}`,
   '/js/lucide.min.js',
   '/js/hammer.min.js',
+  '/js/supabase.min.js',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png'
@@ -63,7 +66,7 @@ self.addEventListener('fetch', (event) => {
       }
       return response;
     }).catch(() => {
-      return caches.match(event.request).then((cached) => {
+      return caches.match(event.request, { ignoreSearch: true }).then((cached) => {
         return cached || new Response('', { status: 503, statusText: 'Offline' });
       });
     })

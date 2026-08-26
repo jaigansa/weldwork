@@ -87,7 +87,10 @@ const altPath = lang === 'en'
   ? Astro.url.pathname.replace(/^\/en/, '/ta')
   : Astro.url.pathname.replace(/^\/ta/, '/en');
 const altURL = new URL(altPath, SITE.baseURL).href;
-const ogImage = new URL('/images/og-image.webp', SITE.baseURL).href;
+const ogImage = new URL('/images/og-image.jpg', SITE.baseURL).href;
+
+// Cache-busting for immutable-cached /css & /js assets — bump on every JS/CSS change
+const ASSET_VER = '2026-08-26-1';
 
 // Localized helper to translate schedule days
 const translateDays = (days: string, currentLang: 'en' | 'ta') => {
@@ -165,7 +168,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <link rel="manifest" href="/manifest.json">
   
-  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href={`/css/app.css?v=${ASSET_VER}`}>
   
   <link rel="preconnect" href="https://challenges.cloudflare.com">
   <link rel="preconnect" href="https://static.cloudflareinsights.com">
@@ -180,7 +183,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
   </script>
 
   <!-- Self-hosted, version-pinned supabase-js (was floating @2 CDN tag) -->
-  <script is:inline src="/js/supabase.min.js"></script>
+  <script is:inline src={`/js/supabase.min.js?v=${ASSET_VER}`}></script>
   <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <script is:inline define:vars={{ enquirySchedule: PARAMS.enquiry.schedule }}>
@@ -683,8 +686,8 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
     <QuoteModal lang={lang} />
   )}
   
-  <script is:inline src="/js/lucide.min.js"></script>
-  <script is:inline src="/js/hammer.min.js"></script>
-  <script is:inline src="/js/app.js"></script>
+  <script is:inline src={`/js/lucide.min.js?v=${ASSET_VER}`}></script>
+  <script is:inline src={`/js/hammer.min.js?v=${ASSET_VER}`}></script>
+  <script is:inline src={`/js/app.js?v=${ASSET_VER}`}></script>
 </body>
 </html>
