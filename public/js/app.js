@@ -721,6 +721,7 @@ function openQuoteModal(btn) {
 
   if (quoteProductInput) quoteProductInput.value = title;
   quoteModal.dataset.category = category;
+  quoteModal.dataset.rate = rate;
   if (quoteBanner && title) {
     if (quoteBannerTitle) quoteBannerTitle.textContent = title;
     if (quoteBannerRate) quoteBannerRate.textContent = [category, rate].filter(Boolean).join(' • ');
@@ -965,6 +966,7 @@ async function initQuoteModal() {
         const { error } = await db.from('quotes').insert({
           product_title: quoteProductInput ? quoteProductInput.value : '',
           product_category: quoteModal.dataset.category || null,
+          product_rate: quoteModal.dataset.rate || null,
           name: document.getElementById('quote-name')?.value || '',
           phone: phoneInput?.value || '',
           email: document.getElementById('quote-email')?.value || null,
