@@ -73,6 +73,11 @@ const catalogueWithTeams = await Promise.all(catalogueItems.map(async (item) => 
   };
 }));
 
+// slug -> display name, for quote requests
+const companyNameBySlug = Object.fromEntries(
+  companies.map(c => [c.id.replace(/^[a-z]{2}\//, ''), c.data.title])
+);
+
 const title = activeScreen === 'home' 
   ? SITE.title 
   : activeScreen === 'catalogue' 
@@ -90,7 +95,7 @@ const altURL = new URL(altPath, SITE.baseURL).href;
 const ogImage = new URL('/images/og-image.jpg', SITE.baseURL).href;
 
 // Cache-busting for immutable-cached /css & /js assets — bump on every JS/CSS change
-const ASSET_VER = '2026-08-26-1';
+const ASSET_VER = '2026-08-26-2';
 
 // Localized helper to translate schedule days
 const translateDays = (days: string, currentLang: 'en' | 'ta') => {
@@ -391,6 +396,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                         data-title={item.data.title}
                         data-category={item.data.category}
                         data-rate={item.data.rate}
+                        data-company-name={companyNameBySlug[item.data.company] || null}
                         aria-label={`${t('getQuote', lang)} - ${item.data.title}`}>
                         <i data-lucide="file-text" class="quote-cta-icon"></i>
                         <span>{t('getQuote', lang)}</span>

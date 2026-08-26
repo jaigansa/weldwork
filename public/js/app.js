@@ -718,10 +718,12 @@ function openQuoteModal(btn) {
   const title = btn.getAttribute('data-title') || '';
   const rate = btn.getAttribute('data-rate') || '';
   const category = btn.getAttribute('data-category') || '';
+  const companyName = btn.getAttribute('data-company-name') || '';
 
   if (quoteProductInput) quoteProductInput.value = title;
   quoteModal.dataset.category = category;
   quoteModal.dataset.rate = rate;
+  quoteModal.dataset.companyName = companyName;
   if (quoteBanner && title) {
     if (quoteBannerTitle) quoteBannerTitle.textContent = title;
     if (quoteBannerRate) quoteBannerRate.textContent = [category, rate].filter(Boolean).join(' • ');
@@ -967,6 +969,7 @@ async function initQuoteModal() {
           product_title: quoteProductInput ? quoteProductInput.value : '',
           product_category: quoteModal.dataset.category || null,
           product_rate: quoteModal.dataset.rate || null,
+          company_name: quoteModal.dataset.companyName || null,
           name: document.getElementById('quote-name')?.value || '',
           phone: phoneInput?.value || '',
           email: document.getElementById('quote-email')?.value || null,

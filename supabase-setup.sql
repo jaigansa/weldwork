@@ -60,6 +60,7 @@ create table if not exists public.quotes (
   product_title text,
   product_category text,
   product_rate text,
+  company_name text,
   name text not null,
   phone text not null,
   email text,
@@ -69,6 +70,9 @@ create table if not exists public.quotes (
   lang text default 'en',
   created_at timestamptz not null default now()
 );
+
+-- Older deployments: add the column without recreating the table
+alter table public.quotes add column if not exists company_name text;
 
 alter table public.quotes enable row level security;
 

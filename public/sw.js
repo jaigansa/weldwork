@@ -1,6 +1,6 @@
-const CACHE_NAME = 'weldwork-cache-v5';
+const CACHE_NAME = 'weldwork-cache-v6';
 // Must match ASSET_VER in Layout.astro
-const VER = '2026-08-26-1';
+const VER = '2026-08-26-2';
 const ASSETS = [
   '/',
   `/css/app.css?v=${VER}`,
