@@ -161,6 +161,11 @@ function initRouting() {
   });
 
   window.addEventListener('popstate', (e) => {
+    if (photoLightbox && !photoLightbox.classList.contains('hidden')) {
+      closePhotoLightbox(true);
+      return;
+    }
+    if (e.state && e.state.lbOpen) return;
     if (e.state && e.state.screen && screens[e.state.screen]) {
       switchScreen(e.state.screen);
       if (e.state.screen === 'catalogue') {
@@ -210,16 +215,26 @@ const lightboxDots = document.getElementById('lightbox-dots');
 const closeLightboxBtn = document.getElementById('close-lightbox');
 const prevPhotoBtn = document.getElementById('lightbox-prev');
 const nextPhotoBtn = document.getElementById('lightbox-next');
+const lbImgWrapper = document.querySelector('#photo-lightbox .lightbox-img-wrapper');
 
 let currentAlbumImages = [];
 let currentAlbumIndex = 0;
 let currentAlbumTitle = '';
+let lastFocusedTrigger = null;
+let lbHistoryPushed = false;
 
 function renderAlbumImage() {
   if (!currentAlbumImages.length || !lightboxImg) return;
   lightboxImg.src = currentAlbumImages[currentAlbumIndex];
+  lightboxImg.alt = currentAlbumTitle ? `${currentAlbumTitle} — photo ${currentAlbumIndex + 1}` : '';
   if (lightboxCaption) lightboxCaption.textContent = currentAlbumTitle;
   if (lightboxCounter) lightboxCounter.textContent = `${currentAlbumIndex + 1} / ${currentAlbumImages.length}`;
+
+  if (typeof lightboxImg.animate === 'function') {
+    lightboxImg.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 200, easing: 'ease-out' });
+  }
+
+  preloadAlbumNeighbours();
 
   if (lightboxDots) {
     lightboxDots.querySelectorAll('.album-dot').forEach((dot, idx) => {
@@ -230,6 +245,15 @@ function renderAlbumImage() {
       }
     });
   }
+}
+
+function preloadAlbumNeighbours() {
+  const total = currentAlbumImages.length;
+  if (total < 2 || !lightboxImg) return;
+  [(currentAlbumIndex + 1) % total, (currentAlbumIndex - 1 + total) % total].forEach((i) => {
+    const img = new Image();
+    img.src = currentAlbumImages[i];
+  });
 }
 
 function nextAlbumPhoto() {
@@ -268,30 +292,107 @@ function openPhotoAlbum(images, title) {
   renderAlbumImage();
   photoLightbox.classList.remove('hidden');
   photoLightbox.setAttribute('aria-hidden', 'false');
+
+  const lbContent = photoLightbox.querySelector('.lightbox-content');
+  if (lbContent && typeof lbContent.animate === 'function') {
+    lbContent.animate(
+      [
+        { opacity: 0, transform: 'scale(0.96) translateY(10px)' },
+        { opacity: 1, transform: 'none' }
+      ],
+      { duration: 260, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
+    );
+  }
+
+  lastFocusedTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  if (closeLightboxBtn) closeLightboxBtn.focus();
+
+  if (!lbHistoryPushed) {
+    history.pushState({ lbOpen: true }, '');
+    lbHistoryPushed = true;
+  }
 }
 
-function closePhotoLightbox() {
-  if (!photoLightbox) return;
+function closePhotoLightbox(fromPop = false) {
+  if (!photoLightbox || photoLightbox.classList.contains('hidden')) return;
   photoLightbox.classList.add('hidden');
   photoLightbox.setAttribute('aria-hidden', 'true');
   if (lightboxImg) lightboxImg.src = '';
   currentAlbumImages = [];
+
+  if (lbHistoryPushed && !fromPop) {
+    lbHistoryPushed = false;
+    history.back();
+  } else {
+    lbHistoryPushed = false;
+  }
+
+  if (lastFocusedTrigger && typeof lastFocusedTrigger.focus === 'function') {
+    lastFocusedTrigger.focus();
+  }
+  lastFocusedTrigger = null;
 }
 
 let touchStartX = 0;
-let touchEndX = 0;
+let touchStartY = 0;
+let touchDeltaX = 0;
+let touchDeltaY = 0;
+let isGestureActive = false;
+const SWIPE_THRESHOLD = 50;
+const DISMISS_THRESHOLD = 90;
 
-function handleTouchStart(e) {
-  touchStartX = e.changedTouches[0].screenX;
+function setLightboxDrag(dragging) {
+  if (!lbImgWrapper) return;
+  lbImgWrapper.classList.toggle('lb-dragging', dragging);
+  if (!dragging) {
+    lbImgWrapper.style.transform = '';
+    lbImgWrapper.style.opacity = '';
+  }
 }
 
-function handleTouchEnd(e) {
-  touchEndX = e.changedTouches[0].screenX;
-  if (touchStartX - touchEndX > 50) {
-    nextAlbumPhoto();
-  } else if (touchEndX - touchStartX > 50) {
-    prevAlbumPhoto();
+function handleTouchStart(e) {
+  const touch = e.changedTouches[0];
+  touchStartX = touch.screenX;
+  touchStartY = touch.screenY;
+  touchDeltaX = 0;
+  touchDeltaY = 0;
+  isGestureActive = true;
+  if (lbImgWrapper) lbImgWrapper.classList.add('lb-dragging');
+}
+
+function handleTouchMove(e) {
+  if (!isGestureActive || !lbImgWrapper) return;
+  const touch = e.changedTouches[0];
+  touchDeltaX = touch.screenX - touchStartX;
+  touchDeltaY = touch.screenY - touchStartY;
+
+  if (Math.abs(touchDeltaY) > Math.abs(touchDeltaX)) {
+    if (touchDeltaY > 0) {
+      lbImgWrapper.style.transform = `translateY(${touchDeltaY * 0.55}px) scale(${Math.max(1 - touchDeltaY / 2400, 0.92)})`;
+      lbImgWrapper.style.opacity = String(Math.max(1 - touchDeltaY / 480, 0.45));
+    }
+  } else if (currentAlbumImages.length > 1) {
+    lbImgWrapper.style.transform = `translateX(${touchDeltaX}px)`;
   }
+}
+
+function handleTouchEnd() {
+  if (!isGestureActive) return;
+  isGestureActive = false;
+  const isHorizontal = Math.abs(touchDeltaX) > Math.abs(touchDeltaY);
+
+  if (!isHorizontal && touchDeltaY > DISMISS_THRESHOLD) {
+    setLightboxDrag(false);
+    closePhotoLightbox();
+    return;
+  }
+
+  if (isHorizontal && currentAlbumImages.length > 1) {
+    if (touchDeltaX < -SWIPE_THRESHOLD) { setLightboxDrag(false); nextAlbumPhoto(); return; }
+    if (touchDeltaX > SWIPE_THRESHOLD) { setLightboxDrag(false); prevAlbumPhoto(); return; }
+  }
+
+  setLightboxDrag(false);
 }
 
 function initPhotoAlbum() {
@@ -314,6 +415,15 @@ function initPhotoAlbum() {
   if (prevPhotoBtn) prevPhotoBtn.addEventListener('click', (e) => { e.stopPropagation(); prevAlbumPhoto(); });
   if (nextPhotoBtn) nextPhotoBtn.addEventListener('click', (e) => { e.stopPropagation(); nextAlbumPhoto(); });
 
+  if (lightboxImg) {
+    lightboxImg.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (photoLightbox && !photoLightbox.classList.contains('hidden')) {
+        nextAlbumPhoto();
+      }
+    });
+  }
+
   if (photoLightbox) {
     photoLightbox.addEventListener('click', (e) => {
       if (e.target === photoLightbox) {
@@ -322,7 +432,12 @@ function initPhotoAlbum() {
     });
 
     photoLightbox.addEventListener('touchstart', handleTouchStart, { passive: true });
+    photoLightbox.addEventListener('touchmove', handleTouchMove, { passive: true });
     photoLightbox.addEventListener('touchend', handleTouchEnd, { passive: true });
+    photoLightbox.addEventListener('touchcancel', () => {
+      isGestureActive = false;
+      setLightboxDrag(false);
+    }, { passive: true });
   }
 
   window.addEventListener('keydown', (e) => {
@@ -349,8 +464,24 @@ function initPhotoAlbum() {
     if (photoLightbox && !photoLightbox.classList.contains('hidden')) {
       const activeTag = document.activeElement ? document.activeElement.tagName : '';
       if (activeTag !== 'INPUT' && activeTag !== 'TEXTAREA' && activeTag !== 'SELECT') {
-        if (e.key === 'ArrowRight') nextAlbumPhoto();
-        if (e.key === 'ArrowLeft') prevAlbumPhoto();
+        if (e.key === 'ArrowRight') { e.preventDefault(); nextAlbumPhoto(); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prevAlbumPhoto(); }
+      }
+    }
+    if (e.key === 'Tab' && photoLightbox && !photoLightbox.classList.contains('hidden')) {
+      const focusables = Array.from(photoLightbox.querySelectorAll('button:not([disabled])'));
+      if (focusables.length) {
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement;
+        const outside = !active || !photoLightbox.contains(active);
+        if (e.shiftKey && (active === first || outside)) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && (active === last || outside)) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     }
   });
