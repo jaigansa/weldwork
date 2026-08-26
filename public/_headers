@@ -1,3 +1,11 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+  Cache-Control: public, max-age=300
+
 /css/*
   Cache-Control: public, max-age=31556952, immutable
 
@@ -8,10 +16,4 @@
   Cache-Control: public, max-age=300
 
 /teams/*
-  Cache-Control: public, max-age=300
-
-/admin/*
-  Cache-Control: no-store
-
-/*
   Cache-Control: public, max-age=300

@@ -2,7 +2,7 @@
 title: "வெற்றி விநாயகா"
 role: "கள தொழில்நுட்ப வல்லுநர் & ஃபாஸ்டனர் தளவாடங்கள் (விரைவில்)"
 weight: 3
-photo: "/images/worker-vetri.jpg"
+photo: "/images/worker-vetri.webp"
 experience: "விரைவில்"
 skills: "வன்பொருள் தளவாடங்கள், தர சோதனை, மொபைல் ரிங் பழுதுபார்ப்பு & அசெம்பிளி ஆதரவு"
 phone: "+91 98405 62997"

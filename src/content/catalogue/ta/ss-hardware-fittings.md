@@ -17,7 +17,7 @@ certifications:
   - "ISO 3506 அரிப்பு எதிர்ப்பு கிரேடு"
 teams: []
 images:
-  - "/images/fasteners-bg.jpg"
+  - "/images/fasteners-bg.webp"
 youtube_url: ""
 ---
 

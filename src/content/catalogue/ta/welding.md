@@ -17,8 +17,8 @@ teams:
   - jai-ganesh
   - mugindh
 images:
-  - "/images/welding-1.jpg"
-  - "/images/welding-2.jpg"
+  - "/images/welding-1.webp"
+  - "/images/welding-2.webp"
 youtube_url: ""
 ---
 

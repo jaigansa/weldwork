@@ -82,7 +82,12 @@ const title = activeScreen === 'home'
       : `${t('aboutUs', lang)} | ${SITE.title}`;
 
 const canonicalURL = new URL(Astro.url.pathname, SITE.baseURL).href;
-const ogImage = new URL('/images/shop-bg.jpg', SITE.baseURL).href;
+const altLang = lang === 'en' ? 'ta' : 'en';
+const altPath = lang === 'en'
+  ? Astro.url.pathname.replace(/^\/en/, '/ta')
+  : Astro.url.pathname.replace(/^\/ta/, '/en');
+const altURL = new URL(altPath, SITE.baseURL).href;
+const ogImage = new URL('/images/og-image.webp', SITE.baseURL).href;
 
 // Localized helper to translate schedule days
 const translateDays = (days: string, currentLang: 'en' | 'ta') => {
@@ -136,6 +141,9 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
   <title>{title}</title>
   <meta name="description" content={SITE.description}>
   <link rel="canonical" href={canonicalURL}>
+  <link rel="alternate" hreflang={lang} href={canonicalURL}>
+  <link rel="alternate" hreflang={altLang} href={altURL}>
+  <link rel="alternate" hreflang="x-default" href={new URL(lang === 'en' ? '/en/' : '/ta/', SITE.baseURL).href}>
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
@@ -171,7 +179,8 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
     window.supabaseConfig = { url: supabaseUrl, anonKey: supabaseAnonKey };
   </script>
 
-  <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Self-hosted, version-pinned supabase-js (was floating @2 CDN tag) -->
+  <script is:inline src="/js/supabase.min.js"></script>
   <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <script is:inline define:vars={{ enquirySchedule: PARAMS.enquiry.schedule }}>
@@ -189,7 +198,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
       <section class={`screen-view ${activeScreen === 'home' ? 'active' : ''}`} id="screen-home" data-path="/">
         <div class="screen-scroll-container shorts-scroll">
           {PARAMS.home.show_hero && (
-            <div class="hero-section" style={`background-image: url('${PARAMS.home.background_image || "/images/shop-bg.jpg"}');`}>
+            <div class="hero-section" style={`background-image: url('${PARAMS.home.background_image || "/images/shop-bg.webp"}');`}>
               <div class="logo-badge">W</div>
               <h1>{SITE.title}</h1>
               <p class="hero-tagline">{SITE.description}</p>
@@ -218,7 +227,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
           <div class="shops-container">
             {companies.map((card, idx) => (
               <div class="shop-business-card shorts-card" data-card-index={idx}>
-                <div class="shop-card-bg" style={`background-image: url('${card.data.bg_image || "/images/shop-bg.jpg"}');`}></div>
+                <div class="shop-card-bg" style={`background-image: url('${card.data.bg_image || "/images/shop-bg.webp"}');`}></div>
                 {card.data.bg_video && (
                   <video class="shop-card-video" autoplay muted loop playsinline>
                     <source src={card.data.bg_video} type="video/mp4" />
@@ -453,7 +462,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
             {teamsWithContent.map((member, idx) => (
               <div class="worker-card shorts-card" id={`worker-${member.id.split('/').pop()?.replace('.md', '') || member.id}`} data-card-index={idx}>
                 <div class="worker-media">
-                  <img src={member.data.photo || "/icons/icon-192.png"} alt={member.data.title} class="worker-photo" />
+                  <img src={member.data.photo || "/icons/icon-192.png"} alt={member.data.title} class="worker-photo" loading="lazy" decoding="async" />
                 </div>
                 <div class="worker-info" style="visibility: hidden; opacity: 0;">
                   <div class="worker-header-meta">
@@ -520,7 +529,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
       {/* Screen 4: About */}
       <section class={`screen-view ${activeScreen === 'about' ? 'active' : ''}`} id="screen-about" data-path="/about/">
         <div class="screen-scroll-container shorts-scroll">
-          <div class="section-header" style="padding: 20px 24px; background-image: url('/images/shop-bg.jpg');">
+          <div class="section-header" style="padding: 20px 24px; background-image: url('/images/shop-bg.webp');">
             <h2>{t('aboutUs', lang)}</h2>
             <p class="section-intro">{t('aboutSubtitle', lang)}</p>
             <div class="scroll-down-hint"><i data-lucide="chevrons-down"></i></div>

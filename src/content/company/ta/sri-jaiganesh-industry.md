@@ -3,7 +3,7 @@ title: "ஸ்ரீ ஜெய்கணேஷ் இண்டஸ்ட்ரி"
 tagline: "உலோகத் தயாரிப்புப் பணிகள் மற்றும் தொழில்துறை வெல்டிங்"
 weight: 1
 logo: "/icons/icon-192.png"
-bg_image: "/images/shop-bg.jpg"
+bg_image: "/images/shop-bg.webp"
 schedule:
   - days: "திங்கள் – வெள்ளி"
     hours: "8:30 AM – 8:00 PM"

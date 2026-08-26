@@ -19,8 +19,8 @@ teams:
   - mugindh
   - jai-ganesh
 images:
-  - "/images/welding-2.jpg"
-  - "/images/shop-bg.jpg"
+  - "/images/welding-2.webp"
+  - "/images/shop-bg.webp"
 youtube_url: ""
 ---
 

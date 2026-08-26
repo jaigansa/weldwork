@@ -2,7 +2,7 @@
 title: "MUGINDH"
 role: "Lead Fabricator & Vehicle Body Expert"
 weight: 1
-photo: "/images/worker-mugi.jpg"
+photo: "/images/worker-mugi.webp"
 experience: "15+ Years Experience"
 skills: "Truck Body Building, Chassis Reinforcement, CNC Laser Cutting & Heavy Machine Assembly"
 phone: "+91 98416 85006"

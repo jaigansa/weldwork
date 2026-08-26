@@ -2,7 +2,7 @@
 title: "முகிந்த்"
 role: "தலைமைத் தயாரிப்பாளர் & வாகன பாடி நிபுணர்"
 weight: 1
-photo: "/images/worker-mugi.jpg"
+photo: "/images/worker-mugi.webp"
 experience: "15+ ஆண்டுகள் அனுபவம்"
 skills: "லாரி பாடி கட்டுதல், சேஸ் வலுப்படுத்துதல், CNC லேசர் வெட்டும் பணி மற்றும் கனரக இயந்திரங்கள் அசெம்பிளி"
 phone: "+91 98416 85006"

@@ -3,7 +3,7 @@ title: "SRI JAIGANESH INDUSTRY"
 tagline: "Metal Fabrications Works & Industrial Welding"
 weight: 1
 logo: "/icons/icon-192.png"
-bg_image: "/images/shop-bg.jpg"
+bg_image: "/images/shop-bg.webp"
 schedule:
   - days: "Mon – Fri"
     hours: "8:30 AM – 8:00 PM"

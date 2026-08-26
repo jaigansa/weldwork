@@ -3,7 +3,7 @@ title: "NEW BOLT NUT SHOP"
 tagline: "Industrial Fasteners, High-Tensile Bolts & Hardware Supplies"
 weight: 3
 logo: "/icons/icon-192.png"
-bg_image: "/images/fasteners-bg.jpg"
+bg_image: "/images/fasteners-bg.webp"
 schedule:
   - days: "Mon – Fri"
     hours: "8:00 AM – 8:30 PM"

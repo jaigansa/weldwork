@@ -17,7 +17,7 @@ certifications:
   - "ISO 4014 / 4032 ஹெக்ஸ் போல்ட்கள் & நட்டுகள்"
 teams: []
 images:
-  - "/images/fasteners-bg.jpg"
+  - "/images/fasteners-bg.webp"
 youtube_url: ""
 ---
 

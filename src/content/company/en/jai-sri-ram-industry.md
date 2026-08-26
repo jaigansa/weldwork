@@ -3,7 +3,7 @@ title: "JAI SRI RAM INDUSTRY"
 tagline: "TRUCK BODY WORKS & Heavy Vehicle Fabrication"
 weight: 2
 logo: "/icons/icon-192.png"
-bg_image: "/images/truck-body-bg.jpg"
+bg_image: "/images/truck-body-bg.webp"
 schedule:
   - days: "Mon – Fri"
     hours: "8:00 AM – 8:30 PM"

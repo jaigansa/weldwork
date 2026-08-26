@@ -17,7 +17,7 @@ certifications:
   - "ISO 4014 / 4032 Hex Bolts & Nuts"
 teams: []
 images:
-  - "/images/fasteners-bg.jpg"
+  - "/images/fasteners-bg.webp"
 youtube_url: ""
 ---
 

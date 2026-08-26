@@ -19,8 +19,8 @@ teams:
   - jai-ganesh
   - mugindh
 images:
-  - "/images/fabrication-1.jpg"
-  - "/images/fabrication-2.jpg"
+  - "/images/fabrication-1.webp"
+  - "/images/fabrication-2.webp"
 youtube_url: ""
 ---
 

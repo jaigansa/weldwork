@@ -3,7 +3,7 @@ title: "ஜெய் ஸ்ரீராம் இண்டஸ்ட்ரி"
 tagline: "லாரி பாடி பில்டிங் & கனரக வாகன உலோகம் தயாரிப்பு"
 weight: 2
 logo: "/icons/icon-192.png"
-bg_image: "/images/truck-body-bg.jpg"
+bg_image: "/images/truck-body-bg.webp"
 schedule:
   - days: "திங்கள் – வெள்ளி"
     hours: "8:00 AM – 8:30 PM"

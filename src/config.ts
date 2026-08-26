@@ -1,7 +1,7 @@
 export const SITE = {
   title: "WeldWork",
   description: "Premium Metal Fabrication Works & Industrial Welding Solutions",
-  baseURL: "https://weldwork.in/",
+  baseURL: (import.meta.env.SITE || "https://weldwork.in").replace(/\/$/, ""),
   languageCode: "en"
 };
 
@@ -23,7 +23,7 @@ export const PARAMS = {
   },
   home: {
     show_hero: true,
-    background_image: "/images/shop-bg.jpg",
+    background_image: "/images/shop-bg.webp",
     show_shop_hours: true,
     show_action_buttons: true,
     show_call_button: true,
@@ -34,7 +34,7 @@ export const PARAMS = {
   },
   catalogue: {
     show_section_header: true,
-    background_image: "/images/fabrication-1.jpg",
+    background_image: "/images/fabrication-1.webp",
     show_feature_images: true,
     show_rate_display: true,
     show_team_references: true,
@@ -43,7 +43,7 @@ export const PARAMS = {
   },
   teams: {
     show_section_header: true,
-    background_image: "/images/welding-1.jpg",
+    background_image: "/images/welding-1.webp",
     show_experience_badge: true,
     show_skills_box: true,
     show_worker_bio: true,

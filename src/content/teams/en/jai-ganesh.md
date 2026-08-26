@@ -2,7 +2,7 @@
 title: "JAI GANESH"
 role: "Designer & Master Fitter"
 weight: 2
-photo: "/images/worker-jai.jpg"
+photo: "/images/worker-jai.webp"
 experience: "15+ Years Experience"
 skills: "Structural Layout Design, Precision Machine Fitting, CAD Blueprints, ARC Welding & Assembly"
 phone: "+91 98405 62997"

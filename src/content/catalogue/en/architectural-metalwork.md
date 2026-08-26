@@ -18,8 +18,8 @@ certifications:
 teams:
   - jai-ganesh
 images:
-  - "/images/fabrication-2.jpg"
-  - "/images/fabrication-1.jpg"
+  - "/images/fabrication-2.webp"
+  - "/images/fabrication-1.webp"
 youtube_url: ""
 ---
 

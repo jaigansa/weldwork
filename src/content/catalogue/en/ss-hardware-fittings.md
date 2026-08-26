@@ -17,7 +17,7 @@ certifications:
   - "ISO 3506 Corrosion Resistant Grade"
 teams: []
 images:
-  - "/images/fasteners-bg.jpg"
+  - "/images/fasteners-bg.webp"
 youtube_url: ""
 ---
 
