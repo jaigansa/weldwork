@@ -1,6 +1,9 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: jaigansa/weldwork
   branch: main
+  base_url: https://decap-cms-oauth.vercel.app
+  auth_endpoint: /api/auth
 
 local_backend: true
 
