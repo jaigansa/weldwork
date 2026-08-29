@@ -1,6 +1,5 @@
 backend:
-  name: github
-  repo: jaigansa/weldwork
+  name: git-gateway
   branch: main
 
 local_backend: true
