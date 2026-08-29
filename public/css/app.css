@@ -2,23 +2,23 @@
 
 :root,
 [data-theme="dark"] {
-  --bg-primary: #0b0f19;
+  --bg-primary: #090d16;
   --bg-secondary: #111827;
-  --bg-tertiary: #1f2937;
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-muted: #94a3b8;
-  --accent-color: #f97316;
-  --accent-hover: #ea580c;
-  --accent-glow: rgba(249, 115, 22, 0.45);
-  --steel-blue: #38bdf8;
-  --border-color: #374151;
+  --bg-tertiary: #1b2436;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-color: #ff9f1c;
+  --accent-hover: #f59e0b;
+  --accent-glow: rgba(255, 159, 28, 0.4);
+  --steel-blue: #06b6d4;
+  --border-color: #293548;
   --whatsapp-green: #22c55e;
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 30px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
   --header-height: 60px;
   --footer-height: 80px;
-  --body-outer: #030712;
-  --card-glass: rgba(17, 24, 39, 0.9);
+  --body-outer: #04070d;
+  --card-glass: rgba(17, 24, 39, 0.92);
   --nav-bg: #111827;
 }
 
@@ -27,17 +27,17 @@
   --bg-secondary: #ffffff;
   --bg-tertiary: #f1f5f9;
   --text-primary: #0f172a;
-  --text-secondary: #64748b;
+  --text-secondary: #475569;
   --text-muted: #94a3b8;
-  --accent-color: #f97316;
-  --accent-hover: #ea580c;
-  --accent-glow: rgba(249, 115, 22, 0.3);
+  --accent-color: #d97706;
+  --accent-hover: #b45309;
+  --accent-glow: rgba(217, 119, 6, 0.25);
   --steel-blue: #0284c7;
   --border-color: #e2e8f0;
   --whatsapp-green: #16a34a;
   --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
   --body-outer: #e2e8f0;
-  --card-glass: rgba(255, 255, 255, 0.94);
+  --card-glass: rgba(255, 255, 255, 0.95);
   --nav-bg: #ffffff;
 }
 
@@ -46,6 +46,29 @@
   margin: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Global Scrollbar Handle Removal (Full scrollability preserved) */
+*,
+*::before,
+*::after,
+html,
+body,
+.screen-scroll-container,
+.modal-container,
+.details-drawer-container,
+.reviews-list,
+.global-search-results {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 /* Page load fade-in */
@@ -154,25 +177,17 @@ body {
   flex-direction: column;
   height: 100dvh;
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
   background-color: var(--bg-primary);
-  border-left: 1px solid var(--border-color);
-  border-right: 1px solid var(--border-color);
+  border: none;
   position: relative;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.4);
+  box-shadow: none;
   transition: background-color 0.3s ease, border-color 0.3s ease;
   overflow: hidden;
 }
 
-@media (min-width: 768px) {
-  .app-container {
-    max-width: 100%;
-    border-left: none;
-    border-right: none;
-    box-shadow: none;
-  }
-}
+/* App container retains 600px centered mobile shell on desktop */
 
 .app-header {
   height: var(--header-height);
@@ -1106,12 +1121,12 @@ body {
 }
 
 .hours-row.is-halfday {
-  border-color: rgba(249, 115, 22, 0.3);
-  background: rgba(249, 115, 22, 0.06);
+  border-color: var(--accent-glow);
+  background: rgba(255, 159, 28, 0.08);
 }
 
 .hours-row.is-halfday .hours-days {
-  color: #fdba74;
+  color: var(--accent-color);
 }
 
 .hours-row.is-holiday {
@@ -2219,10 +2234,11 @@ a.social-handle-item:hover {
 }
 
 .app-nav-wrapper {
-  position: absolute;
-  bottom: 12px;
-  left: 14px;
-  right: 14px;
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(440px, calc(100% - 28px));
   height: 64px;
   z-index: 50;
 }
@@ -2329,8 +2345,8 @@ a.social-handle-item:hover {
 }
 
 .center-btn-inner.is-scroll-top {
-  background: linear-gradient(135deg, #0284c7, #38bdf8);
-  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, var(--steel-blue), var(--accent-color));
+  box-shadow: 0 8px 24px var(--accent-glow), 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .center-btn-inner.is-scroll-top .icon-catalogue {
@@ -2806,36 +2822,47 @@ a.social-handle-item:hover {
 
 .drawer-pricing-box {
   background: var(--bg-tertiary);
-  border: 1px solid rgba(249, 115, 22, 0.35);
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
+  border: 1px solid var(--accent-glow);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.pricing-badge-row {
+.pricing-main-amount {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.pricing-meta-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .pricing-type {
-  font-size: 0.75rem;
+  font-size: 0.76rem;
   text-transform: uppercase;
   color: var(--text-secondary);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.4px;
 }
 
-.pricing-amount {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: var(--accent-color);
+.pricing-dot {
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
 
 .pricing-date {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  display: block;
-  margin-top: 2px;
+  font-weight: 500;
 }
 
 .drawer-specs-grid {
@@ -3304,7 +3331,7 @@ a.social-handle-item:hover {
 
 .team-selector-item:hover {
   border-color: var(--accent-color);
-  background: rgba(249, 115, 22, 0.08);
+  background: var(--accent-glow);
 }
 
 .team-selector-item .selector-avatar {
@@ -3347,7 +3374,7 @@ a.social-handle-item:hover {
 }
 
 .team-selector-item .selector-actions .selector-call {
-  background: rgba(249, 115, 22, 0.2);
+  background: var(--accent-glow);
   color: var(--accent-color);
 }
 
@@ -3656,16 +3683,13 @@ a.social-handle-item:hover {
    Footer
    ============================================ */
 .app-footer {
+  display: block;
   background: var(--bg-primary);
   border-top: 1px solid var(--border-color);
-  padding: 18px 24px;
-}
-
-/* Mobile: fixed-height app shell scrolls internally, footer would only overlay */
-@media (max-width: 767px) {
-  .app-footer {
-    display: none;
-  }
+  padding: 24px 20px 100px 20px;
+  scroll-snap-align: start;
+  position: relative;
+  z-index: 2;
 }
 
 .footer-inner {
@@ -3846,205 +3870,302 @@ a.social-handle-item:hover {
 }
 
 /* ============================================
-   Desktop Layout (768px+)
+   Desktop Layout Refinements (768px+)
    ============================================ */
 @media (min-width: 768px) {
-  body {
-    position: static;
-    overflow: auto;
-    height: auto;
-  }
-
-  .app-container {
-    height: auto;
-    min-height: 100dvh;
-  }
-
-  .app-header {
-    padding: 0 32px;
-  }
-
-  .screen-scroll-container {
-    overflow: visible !important;
-    scroll-snap-type: none !important;
-    height: auto !important;
-  }
-
-  /* Screens join normal document flow so page scrolls to footer */
-  .app-content {
-    height: auto;
-    overflow: visible;
-  }
-
-  .screen-view {
-    position: static;
-    display: none;
-    height: auto;
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-  }
-
-  .screen-view.active {
-    display: block;
-  }
-
-  /* Nav floats fixed at viewport bottom on desktop, centered like mobile */
-  .app-nav-wrapper {
-    position: fixed;
-    bottom: 16px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    width: min(420px, calc(100% - 28px));
-  }
-
-  /* Reserve space above and below so fixed nav never covers footer text */
-  .app-footer {
-    margin-top: 88px;
-    padding-bottom: 96px;
-  }
-
-  .shorts-scroll .shop-business-card,
-  .shorts-scroll .service-card,
-  .shorts-scroll .worker-card {
-    min-height: auto;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    scroll-snap-align: none;
-    position: relative;
-  }
-
-  /* Shop card: bg image fills entire card, content overlays at bottom */
-  .shorts-scroll .shop-business-card {
-    min-height: 460px;
-    justify-content: flex-end;
-  }
-
-  /* Catalogue card: bg image fills entire card, content overlays at bottom */
-  .shorts-scroll .service-card {
-    min-height: 460px;
-  }
-
-  /* Worker card: photo fills entire card, content overlays at bottom */
-  .shorts-scroll .worker-card {
-    min-height: 520px;
-  }
-
-  .shops-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 24px;
-    padding: 24px 32px;
-  }
-
-  .shorts-scroll .shops-container {
-    gap: 24px;
-    margin-bottom: 24px;
-  }
-
-  .services-grid,
-  .workers-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
-    padding: 24px 32px;
-    margin-bottom: 30px;
-  }
-
-  .shorts-scroll .services-grid,
-  .shorts-scroll .workers-grid {
-    gap: 24px;
-    margin-bottom: 30px;
-  }
-
-  .section-header {
-    padding: 40px 32px 32px !important;
-  }
-
-  .section-header h2 {
-    font-size: 2rem;
-  }
-
-  .shop-compact-actions {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    order: 3;
-    align-self: stretch;
-    justify-content: center;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 12px 18px;
-    margin-top: 1rem;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 16px;
-  }
-
-  .catalogue-compact-actions {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    top: auto;
-    order: 3;
-    align-self: center;
-    justify-content: center;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-    width: fit-content;
-    max-width: calc(100% - 24px);
-    padding: 12px 18px;
-    margin-top: auto;
-    margin-bottom: 16px;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 16px;
-  }
-
-  .shop-info-bottom,
-  .shorts-scroll .shop-business-card .shop-info-bottom {
-    position: relative;
-    order: 2;
-    padding: 18px;
-  }
-
-  .shorts-scroll .shop-business-card {
-    padding: 0 0 16px;
-  }
-
-  .worker-contact-actions {
-    flex-direction: row;
-    justify-content: center;
-    margin: 0;
-    padding: 12px;
-  }
-
-  .shorts-scroll .worker-card .worker-contact-actions {
-    align-self: auto;
-    margin: 0;
-    margin-bottom: 0;
-    flex-direction: row;
-    justify-content: center;
-  }
-
-  .company-filter-bar {
-    padding: 14px 32px;
-  }
-
   .details-drawer-container {
-    max-width: 560px;
+    max-width: 520px;
   }
 
   .global-search-panel {
-    max-width: 640px;
+    max-width: 600px;
   }
 
   .quote-modal-content {
     max-width: 520px;
   }
+}
+
+/* Company Contact Modal & vCard Generator Styles - Full Frame Width & Single Column */
+.company-contact-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.company-contact-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 14px;
+}
+
+.company-contact-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.company-contact-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.contact-title-row h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.company-contact-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  background: var(--accent-glow);
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.company-contact-tagline {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.company-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.contact-option-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.contact-option-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.contact-option-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contact-option-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+.contact-option-card.btn-call .contact-option-icon { color: var(--text-primary); }
+.contact-option-card.btn-whatsapp .contact-option-icon { color: var(--whatsapp-green); }
+.contact-option-card.btn-map .contact-option-icon { color: var(--steel-blue); }
+.contact-option-card.btn-email .contact-option-icon { color: var(--accent-color); }
+
+.contact-option-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.contact-option-label {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.4px;
+  line-height: 1.1;
+}
+
+.contact-option-val {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.company-contact-footer-action {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.save-vcard-button,
+.qrcode-vcard-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.save-vcard-button {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.save-vcard-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--accent-glow);
+}
+
+.qrcode-vcard-button {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.qrcode-vcard-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.vcard-btn-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Full-Screen Easy-Scan QR Code Lightbox Styles */
+.qrcode-fullscreen-container {
+  max-width: 400px;
+  width: min(400px, calc(100vw - 28px));
+  padding: 24px 20px;
+  text-align: center;
+  border-radius: 24px;
+}
+
+.qrcode-fullscreen-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.qrcode-fullscreen-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.qrcode-fullscreen-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.qrcode-fullscreen-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qrcode-fullscreen-title-row h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.qrcode-fullscreen-tagline {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qrcode-fullscreen-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-top: 16px;
+}
+
+.qrcode-image-frame {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 20px;
+  display: inline-block;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.qrcode-image-frame img {
+  width: min(260px, 65vw);
+  height: min(260px, 65vw);
+  display: block;
+}
+
+.qrcode-fullscreen-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hint-camera-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent-color);
 }

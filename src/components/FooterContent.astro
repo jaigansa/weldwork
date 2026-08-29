@@ -1,0 +1,82 @@
+---
+import { SITE } from '../config';
+
+interface Props {
+  lang: 'en' | 'ta';
+}
+
+const { lang } = Astro.props;
+
+const F = lang === 'ta'
+  ? {
+      quickLinks: "விரைவு இணைப்புகள்",
+      home: "முகப்பு",
+      catalogue: "பட்டியல்",
+      team: "குழு",
+      about: "எங்களைப் பற்றி",
+      rights: "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
+      privacy: "தனியுரிமை",
+      terms: "விதிமுறைகள்"
+    }
+  : {
+      quickLinks: "Quick links",
+      home: "Home",
+      catalogue: "Catalogue",
+      team: "Team",
+      about: "About",
+      rights: "All rights reserved.",
+      privacy: "Privacy",
+      terms: "Terms"
+    };
+
+const SITE_DATA = {
+  phone: "+91 98405 62997",
+  email: "contact@weldwork.in",
+};
+---
+
+<footer class="app-footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <a href={`/${lang}/`} class="footer-brand" aria-label="WeldWork home">
+        <img src="/icons/icon-192.png" alt="" class="footer-brand-img" />
+        <span class="footer-brand-text">WeldWork</span>
+      </a>
+
+      <nav class="footer-nav" aria-label={F.quickLinks}>
+        <a href={`/${lang}/`} aria-label={F.home}>{F.home}</a>
+        <a href={`/${lang}/catalogue/`} aria-label={F.catalogue}>{F.catalogue}</a>
+        <a href={`/${lang}/teams/`} aria-label={F.team}>{F.team}</a>
+        <a href={`/${lang}/about/`} aria-label={F.about}>{F.about}</a>
+      </nav>
+
+      <div class="footer-links">
+        <a href={`tel:${SITE_DATA.phone.replace(/\s/g, '')}`} class="footer-icon-link" aria-label="Call us">
+          <i data-lucide="phone"></i>
+        </a>
+        <a href={`mailto:${SITE_DATA.email}`} class="footer-icon-link" aria-label="Email us">
+          <i data-lucide="mail"></i>
+        </a>
+        <span class="footer-divider" aria-hidden="true"></span>
+        <a href="#" class="footer-icon-link" aria-label="Website">
+          <i data-lucide="globe"></i>
+        </a>
+        <a href="#" class="footer-icon-link" aria-label="YouTube">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>
+        </a>
+        <a href="#" class="footer-icon-link" aria-label="Instagram">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copyright">© {new Date().getFullYear()} WeldWork. {F.rights}</p>
+      <p class="footer-policy">
+        <a href={`/${lang}/privacy/`} aria-label={F.privacy}>{F.privacy}</a>
+        <span class="footer-dot" aria-hidden="true">·</span>
+        <a href={`/${lang}/terms/`} aria-label={F.terms}>{F.terms}</a>
+      </p>
+    </div>
+  </div>
+</footer>

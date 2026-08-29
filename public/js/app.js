@@ -71,26 +71,17 @@ function switchScreen(screenKey) {
   }
 }
 
-// Desktop uses window scroll (containers are static flow); mobile uses inner container.
-function isDesktopLayout() {
-  return window.matchMedia('(min-width: 768px)').matches;
-}
-
 function currentScrollTop() {
-  if (!isDesktopLayout()) {
-    const container = document.querySelector('.screen-view.active .screen-scroll-container');
-    if (container) return container.scrollTop;
-  }
+  const container = document.querySelector('.screen-view.active .screen-scroll-container');
+  if (container) return container.scrollTop;
   return window.scrollY || document.documentElement.scrollTop || 0;
 }
 
 function smoothScrollToTop() {
-  if (!isDesktopLayout()) {
-    const container = document.querySelector('.screen-view.active .screen-scroll-container');
-    if (container) {
-      container.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
+  const container = document.querySelector('.screen-view.active .screen-scroll-container');
+  if (container) {
+    container.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -1285,8 +1276,12 @@ let currentRatingAlreadyRated = false;
 let supabaseClient = null;
 
 function getSupabase() {
-  if (!supabaseClient && window.supabase && window.supabaseConfig && window.supabaseConfig.url && window.supabaseConfig.url !== 'YOUR_SUPABASE_URL') {
-    supabaseClient = window.supabase.createClient(window.supabaseConfig.url, window.supabaseConfig.anonKey);
+  if (!supabaseClient && window.supabase) {
+    const url = window.SUPABASE_URL || (window.supabaseConfig && window.supabaseConfig.url);
+    const key = window.SUPABASE_ANON_KEY || (window.supabaseConfig && window.supabaseConfig.anonKey);
+    if (url && key && url !== 'YOUR_SUPABASE_URL') {
+      supabaseClient = window.supabase.createClient(url, key);
+    }
   }
   return supabaseClient;
 }
@@ -1817,6 +1812,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initWorkerInfo();
   initVideoLightbox();
   initCustomRating();
+  initCompanyContactModal();
   initCompanyFilter();
 });
 
@@ -2008,4 +2004,217 @@ function initVideoLightbox() {
   videoLightbox.addEventListener('click', (e) => {
     if (e.target === videoLightbox) closeVideoLightbox();
   });
+}
+
+function initCompanyContactModal() {
+  const modal = document.getElementById('company-contact-modal');
+  const closeBtn = document.getElementById('close-company-contact-modal');
+  const logoEl = document.getElementById('contact-modal-logo');
+  const titleEl = document.getElementById('contact-modal-title');
+  const taglineEl = document.getElementById('contact-modal-tagline');
+  const callBtn = document.getElementById('contact-modal-call');
+  const phoneText = document.getElementById('contact-modal-phone-text');
+  const whatsappBtn = document.getElementById('contact-modal-whatsapp');
+  const mapBtn = document.getElementById('contact-modal-map');
+  const addressText = document.getElementById('contact-modal-address-text');
+  const emailBtn = document.getElementById('contact-modal-email');
+  const emailText = document.getElementById('contact-modal-email-text');
+  const saveVcardBtn = document.getElementById('save-vcard-btn');
+
+  let currentCompanyData = null;
+
+  document.querySelectorAll('.btn-contact-action').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const title = btn.getAttribute('data-company-title') || '';
+      const tagline = btn.getAttribute('data-company-tagline') || '';
+      const logo = btn.getAttribute('data-company-logo') || '/icons/icon-192.png';
+      const phone = btn.getAttribute('data-company-phone') || '';
+      const phoneDisplay = btn.getAttribute('data-company-phone-display') || phone;
+      const whatsapp = btn.getAttribute('data-company-whatsapp') || '';
+      const email = btn.getAttribute('data-company-email') || '';
+      const address = btn.getAttribute('data-company-address') || '';
+      const siteName = btn.getAttribute('data-site-name') || 'WeldWork';
+      const siteUrl = btn.getAttribute('data-site-url') || 'https://weldwork.in';
+
+      currentCompanyData = { title, tagline, logo, phone, phoneDisplay, whatsapp, email, address, siteName, siteUrl };
+
+      if (logoEl) logoEl.src = logo;
+      if (titleEl) titleEl.textContent = title;
+      if (taglineEl) taglineEl.textContent = tagline;
+
+      if (callBtn) {
+        if (phone) {
+          callBtn.href = `tel:${phone}`;
+          callBtn.style.display = 'flex';
+          if (phoneText) phoneText.textContent = phoneDisplay;
+        } else {
+          callBtn.style.display = 'none';
+        }
+      }
+
+      if (whatsappBtn) {
+        if (whatsapp) {
+          whatsappBtn.href = `https://wa.me/${whatsapp}`;
+          whatsappBtn.style.display = 'flex';
+        } else {
+          whatsappBtn.style.display = 'none';
+        }
+      }
+
+      if (mapBtn) {
+        if (address) {
+          mapBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(title + ', ' + address)}`;
+          mapBtn.style.display = 'flex';
+          if (addressText) addressText.textContent = address;
+        } else {
+          mapBtn.style.display = 'none';
+        }
+      }
+
+      if (emailBtn) {
+        if (email) {
+          emailBtn.href = `mailto:${email}`;
+          emailBtn.style.display = 'flex';
+          if (emailText) emailText.textContent = email;
+        } else {
+          emailBtn.style.display = 'none';
+        }
+      }
+
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    });
+  });
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  if (saveVcardBtn) {
+    saveVcardBtn.addEventListener('click', () => {
+      if (!currentCompanyData) return;
+      downloadVCard(
+        currentCompanyData.title,
+        currentCompanyData.phoneDisplay || currentCompanyData.phone,
+        currentCompanyData.email,
+        currentCompanyData.address,
+        currentCompanyData.siteName,
+        currentCompanyData.siteUrl
+      );
+    });
+  }
+
+  const showQrcodeBtn = document.getElementById('show-qrcode-btn');
+  const qrcodeModal = document.getElementById('vcard-qrcode-fullscreen-modal');
+  const closeQrcodeBtn = document.getElementById('close-vcard-qrcode-modal');
+  const fullscreenLogo = document.getElementById('fullscreen-qrcode-logo');
+  const fullscreenCompany = document.getElementById('fullscreen-qrcode-company');
+  const fullscreenTagline = document.getElementById('fullscreen-qrcode-tagline');
+  const fullscreenImg = document.getElementById('fullscreen-qrcode-img');
+
+  if (showQrcodeBtn && qrcodeModal && fullscreenImg) {
+    showQrcodeBtn.addEventListener('click', () => {
+      if (!currentCompanyData) return;
+      
+      if (fullscreenLogo) fullscreenLogo.src = currentCompanyData.logo || '/icons/icon-192.png';
+      if (fullscreenCompany) fullscreenCompany.textContent = currentCompanyData.title;
+      if (fullscreenTagline) fullscreenTagline.textContent = currentCompanyData.tagline || '';
+
+      const qrUrl = generateVCardQRCodeURL(
+        currentCompanyData.title,
+        currentCompanyData.phoneDisplay || currentCompanyData.phone,
+        currentCompanyData.email,
+        currentCompanyData.address,
+        currentCompanyData.siteName,
+        currentCompanyData.siteUrl,
+        320
+      );
+
+      fullscreenImg.src = qrUrl;
+      qrcodeModal.classList.remove('hidden');
+      qrcodeModal.setAttribute('aria-hidden', 'false');
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    });
+
+    if (closeQrcodeBtn) {
+      closeQrcodeBtn.addEventListener('click', () => {
+        qrcodeModal.classList.add('hidden');
+        qrcodeModal.setAttribute('aria-hidden', 'true');
+      });
+    }
+
+    qrcodeModal.addEventListener('click', (e) => {
+      if (e.target === qrcodeModal) {
+        qrcodeModal.classList.add('hidden');
+        qrcodeModal.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+}
+
+function generateVCardQRCodeURL(title, phone, email, address, siteName, siteUrl, size = 320) {
+  const fn = siteName ? `${title} (${siteName})` : title;
+  const org = siteName ? `${title} - ${siteName}` : title;
+  const vcardLines = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${fn}`,
+    `ORG:${org}`,
+    phone ? `TEL;TYPE=CELL,VOICE:${phone}` : '',
+    email ? `EMAIL:${email}` : '',
+    address ? `ADR;TYPE=WORK:;;${address.replace(/,/g, '\\,')};;;;` : '',
+    siteUrl ? `URL:${siteUrl}` : '',
+    `NOTE:Verified business partner on ${siteName || 'WeldWork'}`,
+    'END:VCARD'
+  ].filter(Boolean).join('\n');
+
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(vcardLines)}`;
+}
+
+function downloadVCard(title, phone, email, address, siteName, siteUrl) {
+  const fn = siteName ? `${title} (${siteName})` : title;
+  const org = siteName ? `${title} - ${siteName}` : title;
+  const vcardLines = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${fn}`,
+    `ORG:${org}`,
+    phone ? `TEL;TYPE=CELL,VOICE:${phone}` : '',
+    email ? `EMAIL:${email}` : '',
+    address ? `ADR;TYPE=WORK:;;${address.replace(/,/g, '\\,')};;;;` : '',
+    siteUrl ? `URL:${siteUrl}` : '',
+    `NOTE:Verified business partner on ${siteName || 'WeldWork'}`,
+    'END:VCARD'
+  ].filter(Boolean).join('\r\n');
+
+  const blob = new Blob([vcardLines], { type: 'text/vcard;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  const filename = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_weldwork.vcf`;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

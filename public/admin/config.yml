@@ -1,0 +1,45 @@
+backend:
+  name: test-repo
+
+media_folder: "public/images"
+public_folder: "/images"
+
+collections:
+  - name: "catalogue_en"
+    label: "Products (English)"
+    folder: "src/content/catalogue/en"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Category", name: "category", widget: "string" }
+      - { label: "Labour Rate", name: "rate", widget: "string" }
+      - { label: "Rate Unit", name: "rate_type", widget: "string" }
+      - { label: "Partner Company", name: "company", widget: "string" }
+      - { label: "Image", name: "image", widget: "image" }
+
+  - name: "teams_en"
+    label: "Team Members (English)"
+    folder: "src/content/teams/en"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Name", name: "title", widget: "string" }
+      - { label: "Role", name: "role", widget: "string" }
+      - { label: "Skills & Expertise", name: "skills", widget: "string" }
+      - { label: "Photo", name: "photo", widget: "image" }
+      - { label: "WhatsApp Number", name: "whatsapp", widget: "string", required: false }
+
+  - name: "companies_en"
+    label: "Companies & Shops (English)"
+    folder: "src/content/companies/en"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Tagline", name: "tagline", widget: "string", required: false }
+      - { label: "Phone", name: "phone", widget: "string" }
+      - { label: "WhatsApp", name: "whatsapp", widget: "string" }
+      - { label: "Email", name: "email", widget: "string" }
+      - { label: "Address", name: "address", widget: "string" }
+      - { label: "Logo", name: "logo", widget: "image", required: false }
