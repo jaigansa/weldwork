@@ -59,7 +59,8 @@ const teamsCollection = defineCollection({
     email: z.string().optional(),
     website: z.string().optional(),
     youtube: z.string().optional(),
-    instagram: z.string().optional()
+    instagram: z.string().optional(),
+    upi_id: z.string().optional()
   })
 });
 

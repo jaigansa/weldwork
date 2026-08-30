@@ -71,6 +71,27 @@ function switchScreen(screenKey) {
   }
 }
 
+function navigateTo(screen) {
+  const lang2 = getLang();
+  if (screens[screen]) {
+    const path = `/${lang2}${screens[screen].path}`;
+    history.pushState({ screen }, '', path);
+    switchScreen(screen);
+  }
+}
+
+function scrollToCard(selector) {
+  const screen = document.querySelector('.screen-view.active');
+  if (!screen) return;
+  const card = screen.querySelector(selector);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.style.transition = 'box-shadow 0.3s';
+    card.style.boxShadow = '0 0 0 3px var(--accent-color)';
+    setTimeout(() => { card.style.boxShadow = ''; }, 1800);
+  }
+}
+
 function currentScrollTop() {
   const container = document.querySelector('.screen-view.active .screen-scroll-container');
   if (container) return container.scrollTop;
@@ -1141,20 +1162,6 @@ function initVideoFallback() {
   });
 }
 
-function initHoursToggle() {
-  document.querySelectorAll('[data-hours-toggle]').forEach(box => {
-    box.addEventListener('click', (e) => {
-      e.stopPropagation();
-      box.classList.toggle('is-expanded');
-    });
-  });
-  document.querySelectorAll('[data-catalogue-toggle]').forEach(box => {
-    box.addEventListener('click', (e) => {
-      e.stopPropagation();
-      box.classList.toggle('is-expanded');
-    });
-  });
-}
 
 const teamSelectorModal = document.getElementById('team-selector-modal');
 const teamSelectorList = document.getElementById('team-selector-list');
@@ -1615,26 +1622,7 @@ function initGlobalSearch() {
     input.blur();
   }
 
-  function navigateTo(screen) {
-    const lang2 = window.location.pathname.startsWith('/ta') ? 'ta' : 'en';
-    if (screens[screen]) {
-      const path = `/${lang2}${screens[screen].path}`;
-      history.pushState({ screen }, '', path);
-      switchScreen(screen);
-    }
-  }
 
-  function scrollToCard(selector) {
-    const screen = document.querySelector('.screen-view.active');
-    if (!screen) return;
-    const card = screen.querySelector(selector);
-    if (card) {
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      card.style.transition = 'box-shadow 0.3s';
-      card.style.boxShadow = '0 0 0 2px var(--accent-color)';
-      setTimeout(() => { card.style.boxShadow = ''; }, 1500);
-    }
-  }
 
   function renderResults(query) {
     if (!body) return;
@@ -1808,127 +1796,68 @@ document.addEventListener('DOMContentLoaded', () => {
   initGlobalSearch();
   initShortsCards();
   initVideoFallback();
-  initHoursToggle();
   initWorkerInfo();
   initVideoLightbox();
   initCustomRating();
-  initCompanyContactModal();
-  initCompanyFilter();
+  initCompanyInfoModal();
+  initLogoPreviewModal();
+  initCompanyProductsModal();
+  initWorkerTipModal();
+  initSwipeNavigation();
 });
 
-function initCompanyFilter() {
-  const lang = getLang();
-  const params = new URLSearchParams(window.location.search);
-  const companySlug = params.get('company');
+function initSwipeNavigation() {
+  const mainScreens = ['home', 'catalogue', 'teams', 'about'];
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
 
-  // Build slug -> {logo, name} map from rendered buttons so back/popstate
-  // and direct ?company= loads still show correct company info.
-  window.__companyMeta = {};
-  document.querySelectorAll('.btn-products').forEach(btn => {
-    const slug = btn.getAttribute('data-company-slug');
-    if (!slug) return;
-    window.__companyMeta[slug] = {
-      logo: btn.getAttribute('data-company-logo') || '',
-      name: btn.getAttribute('data-company-name') || slug
-    };
-  });
+  const appContent = document.querySelector('.app-content') || document.body;
 
-  document.querySelectorAll('.btn-products').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const slug = btn.getAttribute('data-company-slug');
-      if (!slug) return;
-      const path = `/${lang}/catalogue/`;
-      history.pushState({ screen: 'catalogue', company: slug }, '', `${path}?company=${slug}`);
-      applyCompanyFilter(slug);
-      switchScreen('catalogue');
-    });
-  });
+  appContent.addEventListener('touchstart', (e) => {
+    if (document.querySelector('.modal-overlay:not(.hidden), .photo-lightbox-overlay:not(.hidden), .global-search-overlay:not(.hidden)')) {
+      return;
+    }
+    if (e.touches && e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = Date.now();
+    }
+  }, { passive: true });
 
-  const filterBack = document.getElementById('company-filter-back');
-  if (filterBack) {
-    filterBack.addEventListener('click', () => {
-      const path = `/${lang}/catalogue/`;
-      history.pushState({ screen: 'catalogue' }, '', path);
-      applyCompanyFilter(null);
-    });
-  }
+  appContent.addEventListener('touchend', (e) => {
+    if (!touchStartX || !touchStartY) return;
+    if (document.querySelector('.modal-overlay:not(.hidden), .photo-lightbox-overlay:not(.hidden), .global-search-overlay:not(.hidden)')) {
+      touchStartX = 0;
+      touchStartY = 0;
+      return;
+    }
 
-  if (companySlug) {
-    applyCompanyFilter(companySlug);
-  }
-}
+    if (e.changedTouches && e.changedTouches.length === 1) {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+      const elapsedTime = Date.now() - touchStartTime;
 
-function applyCompanyFilter(slug) {
-  const filterBar = document.getElementById('company-filter-bar');
-  const filterLogo = document.getElementById('company-filter-logo');
-  const filterName = document.getElementById('company-filter-name');
-  const filterCount = document.getElementById('company-filter-count');
-  const filterBack = document.getElementById('company-filter-back');
-  const cards = document.querySelectorAll('#screen-catalogue .service-card');
-  let emptyMsg = document.getElementById('company-empty-msg');
+      touchStartX = 0;
+      touchStartY = 0;
 
-  if (!emptyMsg) {
-    emptyMsg = document.createElement('div');
-    emptyMsg.id = 'company-empty-msg';
-    emptyMsg.className = 'company-empty-msg hidden';
-    const grid = document.querySelector('#screen-catalogue .services-grid');
-    if (grid) grid.parentNode.insertBefore(emptyMsg, grid.nextSibling);
-  }
+      if (Math.abs(diffX) > 65 && Math.abs(diffX) > Math.abs(diffY) * 1.6 && elapsedTime < 500) {
+        const activeScreenEl = document.querySelector('.screen-view.active');
+        if (!activeScreenEl) return;
+        const currentScreenId = activeScreenEl.id.replace('screen-', '');
+        const currentIndex = mainScreens.indexOf(currentScreenId);
+        if (currentIndex === -1) return;
 
-  const lang = getLang();
-  const tCount = lang === 'ta' ? 'தயாரிப்புகள்' : 'products';
-
-  // Count matching products directly from the DOM (single source of truth)
-  let matchCount = 0;
-  cards.forEach(card => {
-    if (slug && card.getAttribute('data-company') === slug) matchCount++;
-  });
-
-  if (filterBar) {
-    if (slug) {
-      filterBar.classList.remove('hidden');
-      const meta = (window.__companyMeta && window.__companyMeta[slug]) || {};
-      if (filterLogo) {
-        const logo = meta.logo || '';
-        filterLogo.alt = meta.name || '';
-        if (logo) {
-          filterLogo.src = logo;
-          filterLogo.style.display = 'block';
-        } else {
-          filterLogo.removeAttribute('src');
-          filterLogo.style.display = 'none';
+        if (diffX < 0 && currentIndex < mainScreens.length - 1) {
+          navigateTo(mainScreens[currentIndex + 1]);
+        } else if (diffX > 0 && currentIndex > 0) {
+          navigateTo(mainScreens[currentIndex - 1]);
         }
       }
-      if (filterName) {
-        filterName.textContent = meta.name || slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-      }
-      if (filterCount) {
-        filterCount.textContent = `${matchCount} ${tCount}`;
-      }
-    } else {
-      filterBar.classList.add('hidden');
     }
-  }
-
-  if (filterBack) {
-    filterBack.classList.toggle('hidden', !slug);
-  }
-
-  let visibleCount = 0;
-  cards.forEach(card => {
-    card.classList.add('filter-animate');
-    const cardCompany = card.getAttribute('data-company');
-    const show = !slug || cardCompany === slug;
-    card.classList.toggle('filter-hidden', !show);
-    if (show) visibleCount++;
-  });
-
-  if (slug) {
-    emptyMsg.textContent = lang === 'ta' ? 'இந்த நிறுவனத்திற்கு தயாரிப்புகள் இல்லை' : 'No products found for this company';
-    emptyMsg.classList.toggle('hidden', visibleCount > 0);
-  } else {
-    emptyMsg.classList.add('hidden');
-  }
+  }, { passive: true });
 }
 
 function extractYouTubeId(url) {
@@ -2006,172 +1935,6 @@ function initVideoLightbox() {
   });
 }
 
-function initCompanyContactModal() {
-  const modal = document.getElementById('company-contact-modal');
-  const closeBtn = document.getElementById('close-company-contact-modal');
-  const logoEl = document.getElementById('contact-modal-logo');
-  const titleEl = document.getElementById('contact-modal-title');
-  const taglineEl = document.getElementById('contact-modal-tagline');
-  const callBtn = document.getElementById('contact-modal-call');
-  const phoneText = document.getElementById('contact-modal-phone-text');
-  const whatsappBtn = document.getElementById('contact-modal-whatsapp');
-  const mapBtn = document.getElementById('contact-modal-map');
-  const addressText = document.getElementById('contact-modal-address-text');
-  const emailBtn = document.getElementById('contact-modal-email');
-  const emailText = document.getElementById('contact-modal-email-text');
-  const saveVcardBtn = document.getElementById('save-vcard-btn');
-
-  let currentCompanyData = null;
-
-  document.querySelectorAll('.btn-contact-action').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const title = btn.getAttribute('data-company-title') || '';
-      const tagline = btn.getAttribute('data-company-tagline') || '';
-      const logo = btn.getAttribute('data-company-logo') || '/icons/icon-192.png';
-      const phone = btn.getAttribute('data-company-phone') || '';
-      const phoneDisplay = btn.getAttribute('data-company-phone-display') || phone;
-      const whatsapp = btn.getAttribute('data-company-whatsapp') || '';
-      const email = btn.getAttribute('data-company-email') || '';
-      const address = btn.getAttribute('data-company-address') || '';
-      const siteName = btn.getAttribute('data-site-name') || 'WeldWork';
-      const siteUrl = btn.getAttribute('data-site-url') || 'https://weldwork.in';
-
-      currentCompanyData = { title, tagline, logo, phone, phoneDisplay, whatsapp, email, address, siteName, siteUrl };
-
-      if (logoEl) logoEl.src = logo;
-      if (titleEl) titleEl.textContent = title;
-      if (taglineEl) taglineEl.textContent = tagline;
-
-      if (callBtn) {
-        if (phone) {
-          callBtn.href = `tel:${phone}`;
-          callBtn.style.display = 'flex';
-          if (phoneText) phoneText.textContent = phoneDisplay;
-        } else {
-          callBtn.style.display = 'none';
-        }
-      }
-
-      if (whatsappBtn) {
-        if (whatsapp) {
-          whatsappBtn.href = `https://wa.me/${whatsapp}`;
-          whatsappBtn.style.display = 'flex';
-        } else {
-          whatsappBtn.style.display = 'none';
-        }
-      }
-
-      if (mapBtn) {
-        if (address) {
-          mapBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(title + ', ' + address)}`;
-          mapBtn.style.display = 'flex';
-          if (addressText) addressText.textContent = address;
-        } else {
-          mapBtn.style.display = 'none';
-        }
-      }
-
-      if (emailBtn) {
-        if (email) {
-          emailBtn.href = `mailto:${email}`;
-          emailBtn.style.display = 'flex';
-          if (emailText) emailText.textContent = email;
-        } else {
-          emailBtn.style.display = 'none';
-        }
-      }
-
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.setAttribute('aria-hidden', 'false');
-      }
-
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
-    });
-  });
-
-  if (closeBtn && modal) {
-    closeBtn.addEventListener('click', () => {
-      modal.classList.add('hidden');
-      modal.setAttribute('aria-hidden', 'true');
-    });
-
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.add('hidden');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-    });
-  }
-
-  if (saveVcardBtn) {
-    saveVcardBtn.addEventListener('click', () => {
-      if (!currentCompanyData) return;
-      downloadVCard(
-        currentCompanyData.title,
-        currentCompanyData.phoneDisplay || currentCompanyData.phone,
-        currentCompanyData.email,
-        currentCompanyData.address,
-        currentCompanyData.siteName,
-        currentCompanyData.siteUrl
-      );
-    });
-  }
-
-  const showQrcodeBtn = document.getElementById('show-qrcode-btn');
-  const qrcodeModal = document.getElementById('vcard-qrcode-fullscreen-modal');
-  const closeQrcodeBtn = document.getElementById('close-vcard-qrcode-modal');
-  const fullscreenLogo = document.getElementById('fullscreen-qrcode-logo');
-  const fullscreenCompany = document.getElementById('fullscreen-qrcode-company');
-  const fullscreenTagline = document.getElementById('fullscreen-qrcode-tagline');
-  const fullscreenImg = document.getElementById('fullscreen-qrcode-img');
-
-  if (showQrcodeBtn && qrcodeModal && fullscreenImg) {
-    showQrcodeBtn.addEventListener('click', () => {
-      if (!currentCompanyData) return;
-      
-      if (fullscreenLogo) fullscreenLogo.src = currentCompanyData.logo || '/icons/icon-192.png';
-      if (fullscreenCompany) fullscreenCompany.textContent = currentCompanyData.title;
-      if (fullscreenTagline) fullscreenTagline.textContent = currentCompanyData.tagline || '';
-
-      const qrUrl = generateVCardQRCodeURL(
-        currentCompanyData.title,
-        currentCompanyData.phoneDisplay || currentCompanyData.phone,
-        currentCompanyData.email,
-        currentCompanyData.address,
-        currentCompanyData.siteName,
-        currentCompanyData.siteUrl,
-        320
-      );
-
-      fullscreenImg.src = qrUrl;
-      qrcodeModal.classList.remove('hidden');
-      qrcodeModal.setAttribute('aria-hidden', 'false');
-
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
-    });
-
-    if (closeQrcodeBtn) {
-      closeQrcodeBtn.addEventListener('click', () => {
-        qrcodeModal.classList.add('hidden');
-        qrcodeModal.setAttribute('aria-hidden', 'true');
-      });
-    }
-
-    qrcodeModal.addEventListener('click', (e) => {
-      if (e.target === qrcodeModal) {
-        qrcodeModal.classList.add('hidden');
-        qrcodeModal.setAttribute('aria-hidden', 'true');
-      }
-    });
-  }
-}
-
 function generateVCardQRCodeURL(title, phone, email, address, siteName, siteUrl, size = 320) {
   const fn = siteName ? `${title} (${siteName})` : title;
   const org = siteName ? `${title} - ${siteName}` : title;
@@ -2217,4 +1980,428 @@ function downloadVCard(title, phone, email, address, siteName, siteUrl) {
   link.click();
   document.body.removeChild(link);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function translateDaysJS(days, lang) {
+  if (lang !== 'ta' || !days) return days;
+  return days
+    .replace(/Mon – Fri/g, 'திங்கள் – வெள்ளி')
+    .replace(/Mon - Fri/g, 'திங்கள் – வெள்ளி')
+    .replace(/Saturday/g, 'சனிக்கிழமை')
+    .replace(/Sunday/g, 'ஞாயிற்றுக்கிழமை')
+    .replace(/Holidays/g, 'விடுமுறை நாட்கள்');
+}
+
+function translateHoursJS(hours, lang) {
+  if (lang !== 'ta' || !hours) return hours;
+  return hours
+    .replace(/Regular/g, 'வழக்கமான நேரம்')
+    .replace(/Half Day/g, 'அரை நாள்')
+    .replace(/Emergency Site Support/g, 'அவசரகால தள ஆதரவு')
+    .replace(/Emergency Breakdown Support/g, 'அவசரகால பழுதுபார்ப்பு ஆதரவு')
+    .replace(/Emergency Support/g, 'அவசரகால ஆதரவு')
+    .replace(/Holiday/g, 'விடுமுறை')
+    .replace(/Closed \/ On-Call Supply/g, 'மூடப்பட்டுள்ளது / அழைப்பின் பேரில் விநியோகம்');
+}
+
+function initCompanyInfoModal() {
+  const modal = document.getElementById('company-info-modal');
+  const closeBtn = document.getElementById('close-company-info-modal');
+  const logoEl = document.getElementById('info-modal-logo');
+  const titleEl = document.getElementById('info-modal-title');
+  const taglineEl = document.getElementById('info-modal-tagline');
+  const bodySection = document.getElementById('info-about-section');
+  const bodyText = document.getElementById('info-modal-body');
+  const hoursGrid = document.getElementById('info-modal-hours-grid');
+  const phoneLink = document.getElementById('info-modal-phone-link');
+  const phoneText = document.getElementById('info-modal-phone-text');
+  const emailLink = document.getElementById('info-modal-email-link');
+  const emailText = document.getElementById('info-modal-email-text');
+  const mapLink = document.getElementById('info-modal-map-link');
+  const addressText = document.getElementById('info-modal-address-text');
+  const qrImg = document.getElementById('info-modal-qrcode-img');
+  const saveVcardBtn = document.getElementById('info-modal-save-vcard-btn');
+
+  const lang = getLang();
+  let currentCompanyData = null;
+
+  document.querySelectorAll('.btn-company-info').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const title = btn.getAttribute('data-company-title') || '';
+      const tagline = btn.getAttribute('data-company-tagline') || '';
+      const logo = btn.getAttribute('data-company-logo') || '/icons/icon-192.png';
+      const body = btn.getAttribute('data-company-body') || '';
+      const phone = btn.getAttribute('data-company-phone') || '';
+      const phoneDisplay = btn.getAttribute('data-company-phone-display') || phone;
+      const whatsapp = btn.getAttribute('data-company-whatsapp') || '';
+      const email = btn.getAttribute('data-company-email') || '';
+      const address = btn.getAttribute('data-company-address') || '';
+      const siteName = btn.getAttribute('data-site-name') || 'WeldWork';
+      const siteUrl = btn.getAttribute('data-site-url') || 'https://weldwork.in';
+
+      currentCompanyData = { title, tagline, logo, phone, phoneDisplay, whatsapp, email, address, siteName, siteUrl };
+
+      let schedule = [];
+      try {
+        const rawSchedule = btn.getAttribute('data-company-schedule') || '';
+        schedule = JSON.parse(rawSchedule ? decodeURIComponent(rawSchedule) : '[]');
+      } catch (err) {
+        schedule = [];
+      }
+
+      if (logoEl) logoEl.src = logo;
+      if (titleEl) titleEl.textContent = title;
+      if (taglineEl) taglineEl.textContent = tagline;
+
+      if (bodySection && bodyText) {
+        if (body) {
+          bodyText.textContent = body;
+          bodySection.classList.remove('hidden');
+        } else {
+          bodySection.classList.add('hidden');
+        }
+      }
+
+      if (hoursGrid) {
+        hoursGrid.innerHTML = '';
+        if (schedule && schedule.length > 0) {
+          schedule.forEach(item => {
+            const row = document.createElement('div');
+            const isHoliday = item.status === 'Holiday';
+            const isHalfDay = item.status === 'Half Day';
+            row.className = `hours-row ${isHoliday ? 'is-holiday' : isHalfDay ? 'is-halfday' : ''}`;
+            
+            const daysSpan = document.createElement('span');
+            daysSpan.className = 'hours-days';
+            daysSpan.textContent = translateDaysJS(item.days, lang);
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'hours-time';
+            timeSpan.textContent = translateHoursJS(item.hours, lang);
+
+            row.appendChild(daysSpan);
+            row.appendChild(timeSpan);
+            hoursGrid.appendChild(row);
+          });
+        }
+      }
+
+      if (phoneLink && phoneText) {
+        if (phone) {
+          phoneLink.href = `tel:${phone}`;
+          phoneText.textContent = phoneDisplay;
+          phoneLink.style.display = 'flex';
+        } else {
+          phoneLink.style.display = 'none';
+        }
+      }
+
+      if (emailLink && emailText) {
+        if (email) {
+          emailLink.href = `mailto:${email}`;
+          emailText.textContent = email;
+          emailLink.style.display = 'flex';
+        } else {
+          emailLink.style.display = 'none';
+        }
+      }
+
+      if (mapLink && addressText) {
+        if (address) {
+          mapLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(title + ', ' + address)}`;
+          addressText.textContent = address;
+          mapLink.style.display = 'flex';
+        } else {
+          mapLink.style.display = 'none';
+        }
+      }
+
+      if (qrImg) {
+        qrImg.src = generateVCardQRCodeURL(
+          title,
+          phoneDisplay || phone,
+          email,
+          address,
+          siteName,
+          siteUrl,
+          220
+        );
+      }
+
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    });
+  });
+
+  if (saveVcardBtn) {
+    saveVcardBtn.addEventListener('click', () => {
+      if (!currentCompanyData) return;
+      downloadVCard(
+        currentCompanyData.title,
+        currentCompanyData.phoneDisplay || currentCompanyData.phone,
+        currentCompanyData.email,
+        currentCompanyData.address,
+        currentCompanyData.siteName,
+        currentCompanyData.siteUrl
+      );
+    });
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+}
+
+function initLogoPreviewModal() {
+  const modal = document.getElementById('logo-preview-modal');
+  const closeBtn = document.getElementById('close-logo-preview-modal');
+  const imgEl = document.getElementById('logo-preview-img');
+  const titleEl = document.getElementById('logo-preview-title');
+
+  document.querySelectorAll('.shop-card-logo, .company-contact-logo, .company-info-logo').forEach(logo => {
+    logo.style.cursor = 'pointer';
+    logo.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const src = logo.getAttribute('src');
+      const companyName = logo.getAttribute('data-company-name') || logo.getAttribute('alt') || '';
+      if (!src) return;
+
+      if (imgEl) imgEl.src = src;
+      if (titleEl) titleEl.textContent = companyName.replace(/\s*Logo$/i, '');
+
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+    });
+  });
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+}
+
+function initCompanyProductsModal() {
+  const modal = document.getElementById('company-products-modal');
+  const closeBtn = document.getElementById('close-company-products-modal');
+  const logoEl = document.getElementById('products-modal-company-logo');
+  const nameEl = document.getElementById('products-modal-company-name');
+  const countBadgeEl = document.getElementById('products-modal-count-badge');
+  const listEl = document.getElementById('compact-products-list');
+  const emptyStateEl = document.getElementById('products-empty-state');
+
+  const lang = getLang();
+
+  document.querySelectorAll('.btn-products').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const rawSlug = btn.getAttribute('data-company-slug') || '';
+      const companySlug = rawSlug.replace(/\.md$/, '');
+      const companyName = btn.getAttribute('data-company-name') || '';
+      const companyLogo = btn.getAttribute('data-company-logo') || '/icons/icon-192.png';
+
+      if (logoEl) logoEl.src = companyLogo;
+      if (nameEl) nameEl.textContent = companyName;
+
+      const productsMap = window.__companyProducts || {};
+      const products = productsMap[companySlug] || [];
+
+      if (countBadgeEl) {
+        const countText = lang === 'ta'
+          ? `${products.length} தயாரிப்புகள்`
+          : `${products.length} Product${products.length === 1 ? '' : 's'}`;
+        countBadgeEl.textContent = countText;
+      }
+
+      if (listEl) {
+        listEl.innerHTML = '';
+        if (products.length > 0) {
+          if (emptyStateEl) emptyStateEl.classList.add('hidden');
+          products.forEach(item => {
+            const itemRow = document.createElement('div');
+            itemRow.className = 'compact-product-item';
+            
+            const thumbImg = document.createElement('img');
+            thumbImg.className = 'compact-product-thumb';
+            thumbImg.src = item.image || '/images/service-placeholder.webp';
+            thumbImg.alt = item.title;
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'compact-product-info';
+
+            const titleH4 = document.createElement('h4');
+            titleH4.className = 'compact-product-title';
+            titleH4.textContent = item.title;
+
+            const rateDiv = document.createElement('div');
+            rateDiv.className = 'compact-product-rate';
+            rateDiv.innerHTML = `<i data-lucide="tag" class="rate-tag-icon"></i><span>${item.rate}</span>`;
+
+            infoDiv.appendChild(titleH4);
+            infoDiv.appendChild(rateDiv);
+
+            const openBtn = document.createElement('button');
+            openBtn.className = 'compact-product-open-btn';
+            openBtn.setAttribute('data-card-id', item.cardId);
+            openBtn.setAttribute('data-company-slug', companySlug);
+            openBtn.innerHTML = `<span>${lang === 'ta' ? 'பார்க்க' : 'Open'}</span><i data-lucide="arrow-right" class="open-btn-icon"></i>`;
+
+            const handleOpen = (openEvt) => {
+              openEvt.stopPropagation();
+              if (modal) {
+                modal.classList.add('hidden');
+                modal.setAttribute('aria-hidden', 'true');
+              }
+              navigateTo('catalogue');
+              setTimeout(() => {
+                scrollToCard('#' + item.cardId);
+              }, 350);
+            };
+
+            openBtn.addEventListener('click', handleOpen);
+            itemRow.style.cursor = 'pointer';
+            itemRow.addEventListener('click', handleOpen);
+
+            itemRow.appendChild(thumbImg);
+            itemRow.appendChild(infoDiv);
+            itemRow.appendChild(openBtn);
+            listEl.appendChild(itemRow);
+          });
+        } else {
+          if (emptyStateEl) emptyStateEl.classList.remove('hidden');
+        }
+      }
+
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    });
+  });
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+}
+
+function initWorkerTipModal() {
+  const modal = document.getElementById('worker-tip-modal');
+  const closeBtn = document.getElementById('close-worker-tip-modal');
+  const photoEl = document.getElementById('tip-modal-photo');
+  const nameEl = document.getElementById('tip-modal-name');
+  const roleEl = document.getElementById('tip-modal-role');
+  const qrImg = document.getElementById('tip-modal-qrcode-img');
+  const payLink = document.getElementById('tip-modal-pay-link');
+  const payText = document.getElementById('tip-modal-pay-text');
+  const amountBtns = document.querySelectorAll('.tip-amount-btn');
+
+  let activeAmount = 100;
+  let activeName = '';
+  let activeUpi = '9840562997@upi';
+  const lang = getLang();
+
+  function updateTipUPI() {
+    const upiUrl = `upi://pay?pa=${encodeURIComponent(activeUpi)}&pn=${encodeURIComponent(activeName)}&am=${activeAmount}&cu=INR&tn=${encodeURIComponent('Artisan Appreciation - WeldWork')}`;
+    
+    if (qrImg) {
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiUrl)}`;
+    }
+    if (payLink) {
+      payLink.href = upiUrl;
+    }
+    if (payText) {
+      payText.textContent = lang === 'ta'
+        ? `UPI மூலம் பாராட்டுங்கள் (₹${activeAmount})`
+        : `Send Tip via UPI (₹${activeAmount})`;
+    }
+  }
+
+  document.querySelectorAll('.worker-tip-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      activeName = btn.getAttribute('data-worker-name') || 'Specialist';
+      const role = btn.getAttribute('data-worker-role') || '';
+      const photo = btn.getAttribute('data-worker-photo') || '/icons/icon-192.png';
+      activeUpi = btn.getAttribute('data-worker-upi') || '9840562997@upi';
+
+      if (photoEl) photoEl.src = photo;
+      if (nameEl) nameEl.textContent = activeName;
+      if (roleEl) roleEl.textContent = role;
+
+      updateTipUPI();
+
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    });
+  });
+
+  amountBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      amountBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeAmount = parseInt(btn.getAttribute('data-amount') || '100', 10);
+      updateTipUPI();
+    });
+  });
+
+  if (closeBtn && modal) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
 }

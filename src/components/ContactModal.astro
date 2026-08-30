@@ -76,18 +76,5 @@ const { lang = 'en', accessKey = '', schedule = [], phone = '+919840562997', wha
         <li><span>{row.label}</span><strong>{row.hours}</strong></li>
       ))}
     </ul>
-
-    <p class="hours-notice-hint">{lang === 'ta' ? 'அவசரமாக இருந்தால் நேரடியாக தொடர்பு கொள்ளுங்கள்:' : 'Need something urgent? Reach us directly:'}</p>
-
-    <div class="hours-notice-actions">
-      <a href={`tel:${phone}`} class="hours-action-btn hours-action-call">
-        <i data-lucide="phone" class="hours-action-icon"></i>
-        {lang === 'ta' ? 'அழைப்பு' : 'Call'}
-      </a>
-      <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noopener noreferrer" class="hours-action-btn hours-action-whatsapp">
-        <i data-lucide="message-circle" class="hours-action-icon"></i>
-        WhatsApp
-      </a>
-    </div>
   </div>
 </div>

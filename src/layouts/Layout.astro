@@ -76,8 +76,26 @@ const catalogueWithTeams = await Promise.all(catalogueItems.map(async (item) => 
 
 // slug -> display name, for quote requests
 const companyNameBySlug = Object.fromEntries(
-  companies.map(c => [c.id.replace(/^[a-z]{2}\//, ''), c.data.title])
+  companies.map(c => [c.id.replace(/^[a-z]{2}\//, '').replace(/\.md$/, ''), c.data.title])
 );
+
+// Map company slug -> products array for dedicated product modal
+const companyProductsMap = {};
+companies.forEach(company => {
+  const companySlug = company.id.replace(/^[a-z]{2}\//, '').replace(/\.md$/, '');
+  companyProductsMap[companySlug] = catalogueWithTeams
+    .filter(item => item.data.company === companySlug)
+    .map(item => {
+      const fileBaseName = item.id.split('/').pop()?.replace('.md', '') || item.id;
+      return {
+        cardId: `card-${fileBaseName}`,
+        title: item.data.title,
+        rate: item.data.rate,
+        image: item.data.images?.[0] || '/images/service-placeholder.webp',
+        category: item.data.category
+      };
+    });
+});
 
 const title = activeScreen === 'home' 
   ? SITE.title 
@@ -242,13 +260,15 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                   </video>
                 )}
 
-                {/* Compact Action Bar (Contact, Products, Rating) */}
+                {/* Compact Action Bar (Info, Products, Rating) */}
                 {PARAMS.home.show_action_buttons && (
                   <div class="shop-compact-actions">
-                    <button class="compact-btn btn-contact-action"
+                    <button class="compact-btn btn-company-info"
                       data-company-title={card.data.title}
                       data-company-tagline={card.data.tagline || ''}
                       data-company-logo={card.data.logo || '/icons/icon-192.png'}
+                      data-company-body={card.body ? card.body.trim() : ''}
+                      data-company-schedule={encodeURIComponent(JSON.stringify(card.data.schedule || []))}
                       data-company-phone={card.data.phone_clean || ''}
                       data-company-phone-display={card.data.phone || ''}
                       data-company-whatsapp={card.data.whatsapp || ''}
@@ -256,17 +276,17 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                       data-company-address={card.data.address || ''}
                       data-site-name={SITE.title}
                       data-site-url={SITE.baseURL}
-                      aria-label={`Contact ${card.data.title}`}>
-                      <i data-lucide="phone-call" class="compact-btn-icon"></i>
-                      <span>{lang === 'ta' ? 'தொடர்பு' : 'Contact'}</span>
+                      aria-label={`Info for ${card.data.title}`}>
+                      <i data-lucide="info" class="compact-btn-icon"></i>
+                      <span>{t('info', lang)}</span>
                     </button>
-                    
-                    <button class="compact-btn btn-products" data-company-slug={card.id.replace(/^[a-z]{2}\//, '')} data-company-logo={card.data.logo || ''} data-company-name={card.data.title} aria-label={`View products for ${card.data.title}`}>
+
+                    <button class="compact-btn btn-products" data-company-slug={card.id.replace(/^[a-z]{2}\//, '').replace(/\.md$/, '')} data-company-logo={card.data.logo || ''} data-company-name={card.data.title} aria-label={`View products for ${card.data.title}`}>
                       <i data-lucide="package" class="compact-btn-icon"></i>
                       <span>{lang === 'ta' ? 'தயாரிப்புகள்' : 'Products'}</span>
                     </button>
 
-                    <button class="compact-btn btn-rating-action" data-shop-id={card.id.replace(/^[a-z]{2}\//, '')} data-shop-name={card.data.title} aria-label={`Rate ${card.data.title}`}>
+                    <button class="compact-btn btn-rating-action" data-shop-id={card.id.replace(/^[a-z]{2}\//, '').replace(/\.md$/, '')} data-shop-name={card.data.title} aria-label={`Rate ${card.data.title}`}>
                       <i data-lucide="star" class="compact-btn-icon"></i>
                       <span>{t('rating', lang)}</span>
                     </button>
@@ -276,11 +296,11 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                 {/* Shop Info (Bottom) */}
                 <div class="shop-info-bottom">
                   <div class="card-glass-header">
-                    <img src={card.data.logo || "/icons/icon-192.png"} alt={`${card.data.title} Logo`} class="shop-card-logo" />
+                    <img src={card.data.logo || "/icons/icon-192.png"} alt={`${card.data.title} Logo`} class="shop-card-logo" data-company-name={card.data.title} />
                     <div class="shop-card-titles">
                       <h2>{card.data.title}</h2>
                       <p class="shop-tagline">{card.data.tagline}</p>
-                      <div class="shop-rating-display" data-shop-rating-id={card.id.replace(/^[a-z]{2}\//, '')}>
+                      <div class="shop-rating-display" data-shop-rating-id={card.id.replace(/^[a-z]{2}\//, '').replace(/\.md$/, '')}>
                         <span class="stars-display"></span>
                         <span class="rating-val" data-rating-avg>—</span>
                         <span class="rating-count" data-rating-count></span>
@@ -288,46 +308,6 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                       </div>
                     </div>
                   </div>
-
-                  {/* Working Hours (Collapsible) */}
-                  {PARAMS.home.show_shop_hours && (
-                    <div class="shop-hours-box" data-hours-toggle>
-                      <div class="shop-hours-summary">
-                        <div class="shop-hours-title">
-                          <i data-lucide="clock" class="hours-box-icon"></i>
-                          <span>{t('workingHours', lang)}</span>
-                        </div>
-                        <i data-lucide="chevron-down" class="hours-expand-icon"></i>
-                      </div>
-                      <div class="shop-hours-details">
-                        <div class="shop-hours-grid">
-                          {card.data.schedule && card.data.schedule.length > 0 ? (
-                            card.data.schedule.map((sched) => (
-                              <div class={`hours-row ${sched.status === 'Holiday' ? 'is-holiday' : sched.status === 'Half Day' ? 'is-halfday' : ''}`}>
-                                <span class="hours-days">{translateDays(sched.days, lang)}</span>
-                                <span class="hours-time">{translateHours(sched.hours, lang)}</span>
-                              </div>
-                            ))
-                          ) : (
-                            <>
-                              <div class="hours-row">
-                                <span class="hours-days">{translateDays('Mon – Fri', lang)}</span>
-                                <span class="hours-time">{translateHours('8:00 AM – 8:00 PM', lang)}</span>
-                              </div>
-                              <div class="hours-row is-halfday">
-                                <span class="hours-days">{translateDays('Sunday', lang)}</span>
-                                <span class="hours-time">{translateHours('9:00 AM – 1:30 PM', lang)}</span>
-                              </div>
-                              <div class="hours-row is-holiday">
-                                <span class="hours-days">{translateDays('Holidays', lang)}</span>
-                                <span class="hours-time">{translateHours('Emergency Support', lang)}</span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
@@ -354,16 +334,7 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
             </div>
           )}
 
-          <div class="company-filter-bar hidden" id="company-filter-bar">
-            <button class="company-filter-back" id="company-filter-back" aria-label={lang === 'ta' ? 'அனைத்து தயாரிப்புகளுக்கும் திரும்பு' : 'Back to all products'}>
-              <i data-lucide="arrow-left" class="company-filter-back-icon"></i>
-            </button>
-            <img class="company-filter-logo" id="company-filter-logo" src="" alt="" />
-            <div class="company-filter-info">
-              <span class="company-filter-name" id="company-filter-name"></span>
-              <span class="company-filter-count" id="company-filter-count"></span>
-            </div>
-          </div>
+
 
           <div class="services-grid">
             {catalogueWithTeams.map((item, idx) => {
@@ -394,17 +365,8 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                     </div>
                   )}
 
-                  {/* Right Side Action Buttons */}
+                  {/* Right Side Action Buttons (Info, Photos, Video, Team) */}
                   <div class="catalogue-compact-actions">
-                    {hasImages && PARAMS.catalogue.show_feature_images && (
-                      <button class="compact-btn btn-album" 
-                         data-album-images={JSON.stringify(item.data.images)} 
-                         data-album-title={item.data.title}
-                         aria-label={`View photos for ${item.data.title}`}>
-                        <i data-lucide="camera" class="compact-btn-icon"></i>
-                        <span>{item.data.images?.length}</span>
-                      </button>
-                    )}
                     {PARAMS.catalogue.show_specifications_button && (
                       <button class="compact-btn btn-info"
                         data-title={item.data.title}
@@ -420,6 +382,21 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                         <span>{t('info', lang)}</span>
                       </button>
                     )}
+                    {hasImages && PARAMS.catalogue.show_feature_images && (
+                      <button class="compact-btn btn-album" 
+                         data-album-images={JSON.stringify(item.data.images)} 
+                         data-album-title={item.data.title}
+                         aria-label={`View photos for ${item.data.title}`}>
+                        <i data-lucide="camera" class="compact-btn-icon"></i>
+                        <span>{item.data.images?.length}</span>
+                      </button>
+                    )}
+                    {item.data.youtube_url && (
+                      <button class="compact-btn btn-youtube" data-youtube={item.data.youtube_url} aria-label={`Watch video for ${item.data.title}`}>
+                        <i data-lucide="play" class="compact-btn-icon"></i>
+                        <span>{t('video', lang)}</span>
+                      </button>
+                    )}
                     {PARAMS.catalogue.show_team_references && item.data.teams && item.data.teams.length > 0 && (
                       <button class="compact-btn btn-team" 
                          data-team-trigger="teams" 
@@ -429,12 +406,6 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                          aria-label={`Select Team for ${item.data.title}`}>
                         <i data-lucide="users" class="compact-btn-icon"></i>
                         <span>{t('team', lang)}</span>
-                      </button>
-                    )}
-                    {item.data.youtube_url && (
-                      <button class="compact-btn btn-youtube" data-youtube={item.data.youtube_url} aria-label={`Watch video for ${item.data.title}`}>
-                        <i data-lucide="play" class="compact-btn-icon"></i>
-                        <span>{t('video', lang)}</span>
                       </button>
                     )}
                   </div>
@@ -506,18 +477,28 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
                     </div>
                   )}
                 </div>
+                {/* Right Side Compact Action Buttons (Info, Chat, Tip) */}
                 {PARAMS.teams.show_contact_buttons && (
-                  <div class="worker-contact-actions">
+                  <div class="worker-compact-actions">
                     {PARAMS.teams.show_info_button && (
-                      <button class="worker-btn worker-info-btn" aria-expanded="false" aria-label={`Show details for ${member.data.title}`} onclick={`toggleWorkerInfo(${idx})`}>
-                        <i data-lucide="info" class="btn-icon worker-info-icon"></i>
-                        <span class="btn-label">{t('info', lang)}</span>
+                      <button class="compact-btn worker-info-btn" aria-expanded="false" aria-label={`Show details for ${member.data.title}`} onclick={`toggleWorkerInfo(${idx})`}>
+                        <i data-lucide="info" class="compact-btn-icon worker-info-icon"></i>
+                        <span>{t('info', lang)}</span>
                       </button>
                     )}
-                    <a href={`https://wa.me/${member.data.whatsapp || '919840562997'}`} target="_blank" rel="noopener noreferrer" class="worker-btn btn-whatsapp" aria-label={`Chat with ${member.data.title}`}>
-                      <i data-lucide="message-circle" class="btn-icon"></i>
-                      <span class="btn-label">{t('chat', lang)}</span>
+                    <a href={`https://wa.me/${member.data.whatsapp || '919840562997'}`} target="_blank" rel="noopener noreferrer" class="compact-btn btn-whatsapp" aria-label={`Chat with ${member.data.title}`}>
+                      <i data-lucide="message-circle" class="compact-btn-icon"></i>
+                      <span>{t('chat', lang)}</span>
                     </a>
+                    <button class="compact-btn worker-tip-btn"
+                      data-worker-name={member.data.title}
+                      data-worker-role={member.data.role}
+                      data-worker-photo={member.data.photo || '/icons/icon-192.png'}
+                      data-worker-upi={member.data.upi_id || '9840562997@upi'}
+                      aria-label={`Tip ${member.data.title}`}>
+                      <i data-lucide="heart" class="compact-btn-icon worker-tip-icon"></i>
+                      <span>{lang === 'ta' ? 'பரிசு' : 'Tip'}</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -682,92 +663,82 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
     </div>
   </div>
 
-  {/* Company Contact & Save vCard Modal */}
-  <div class="modal-overlay hidden" id="company-contact-modal" aria-hidden="true" role="dialog">
-    <div class="modal-container company-contact-container">
-      <button class="modal-close" id="close-company-contact-modal" aria-label="Close">&times;</button>
-      <div class="company-contact-header">
-        <img id="contact-modal-logo" src="/icons/icon-192.png" alt="" class="company-contact-logo" />
-        <div class="company-contact-header-info">
-          <div class="contact-title-row">
-            <h2 id="contact-modal-title">Company Name</h2>
-            <span class="company-contact-badge">{SITE.title}</span>
+  {/* Dedicated Company Info, Working Hours & Contact Modal */}
+  <div class="modal-overlay hidden" id="company-info-modal" aria-hidden="true" role="dialog">
+    <div class="modal-container company-info-modal-container">
+      <button class="modal-close" id="close-company-info-modal" aria-label="Close">&times;</button>
+      
+      <div class="company-info-header">
+        <img id="info-modal-logo" src="/icons/icon-192.png" alt="" class="company-info-logo" />
+        <div class="company-info-header-meta">
+          <div class="info-title-row">
+            <h2 id="info-modal-title">Company Name</h2>
           </div>
-          <p id="contact-modal-tagline" class="company-contact-tagline"></p>
+          <p id="info-modal-tagline" class="company-info-tagline"></p>
         </div>
       </div>
-      
-      <div class="company-contact-grid">
-        <a id="contact-modal-call" href="#" class="contact-option-card btn-call">
-          <div class="contact-option-icon-wrap"><i data-lucide="phone" class="contact-option-icon"></i></div>
-          <div class="contact-option-info">
-            <span class="contact-option-label">{lang === 'ta' ? 'அழைப்பு' : 'Call Phone'}</span>
-            <span id="contact-modal-phone-text" class="contact-option-val"></span>
-          </div>
-        </a>
 
-        <a id="contact-modal-whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="contact-option-card btn-whatsapp">
-          <div class="contact-option-icon-wrap"><i data-lucide="message-circle" class="contact-option-icon"></i></div>
-          <div class="contact-option-info">
-            <span class="contact-option-label">WhatsApp</span>
-            <span class="contact-option-val">{lang === 'ta' ? 'உடனடி செய்தி' : 'Instant Message'}</span>
-          </div>
-        </a>
+      <div class="company-info-body">
+        {/* Overview / Description */}
+        <div class="info-section info-about-section hidden" id="info-about-section">
+          <h3><i data-lucide="info" class="info-section-icon"></i> {lang === 'ta' ? 'விவரம்' : 'About Workshop'}</h3>
+          <p id="info-modal-body" class="info-description-text"></p>
+        </div>
 
-        <a id="contact-modal-map" href="#" target="_blank" rel="noopener noreferrer" class="contact-option-card btn-map">
-          <div class="contact-option-icon-wrap"><i data-lucide="map-pin" class="contact-option-icon"></i></div>
-          <div class="contact-option-info">
-            <span class="contact-option-label">{lang === 'ta' ? 'வரைபடம்' : 'Location Map'}</span>
-            <span id="contact-modal-address-text" class="contact-option-val"></span>
-          </div>
-        </a>
+        {/* Working Hours Schedule */}
+        <div class="info-section info-hours-section">
+          <h3><i data-lucide="clock" class="info-section-icon"></i> {t('workingHours', lang)}</h3>
+          <div class="info-hours-grid" id="info-modal-hours-grid"></div>
+        </div>
 
-        <a id="contact-modal-email" href="#" class="contact-option-card btn-email">
-          <div class="contact-option-icon-wrap"><i data-lucide="mail" class="contact-option-icon"></i></div>
-          <div class="contact-option-info">
-            <span class="contact-option-label">{lang === 'ta' ? 'மின்னஞ்சல்' : 'Send Email'}</span>
-            <span id="contact-modal-email-text" class="contact-option-val"></span>
+        {/* Contact & Location details */}
+        <div class="info-section info-contact-section">
+          <h3><i data-lucide="phone-call" class="info-section-icon"></i> {lang === 'ta' ? 'தொடர்பு & முகவரி' : 'Contact & Location'}</h3>
+          <div class="info-contact-list">
+            <a id="info-modal-phone-link" href="#" class="info-contact-item">
+              <i data-lucide="phone" class="info-contact-icon"></i>
+              <span id="info-modal-phone-text"></span>
+            </a>
+            <a id="info-modal-email-link" href="#" class="info-contact-item">
+              <i data-lucide="mail" class="info-contact-icon"></i>
+              <span id="info-modal-email-text"></span>
+            </a>
+            <a id="info-modal-map-link" href="#" target="_blank" rel="noopener noreferrer" class="info-contact-item">
+              <i data-lucide="navigation" class="info-contact-icon"></i>
+              <span id="info-modal-address-text"></span>
+            </a>
           </div>
-        </a>
-      </div>
 
-      <div class="company-contact-footer-action">
-        <button id="save-vcard-btn" class="save-vcard-button">
-          <i data-lucide="user-plus" class="vcard-btn-icon"></i>
-          <span>{lang === 'ta' ? 'சேமி (.vcf)' : 'Save Contact (.vcf)'}</span>
-        </button>
-        <button id="show-qrcode-btn" class="qrcode-vcard-button">
-          <i data-lucide="qr-code" class="vcard-btn-icon"></i>
-          <span>{lang === 'ta' ? 'QR குறியீடு' : 'QR Code'}</span>
-        </button>
+          <div class="company-contact-qrcode-wrap">
+            <div class="qrcode-image-frame">
+              <img id="info-modal-qrcode-img" src="" alt="Contact vCard QR Code" width="180" height="180" />
+            </div>
+            <p class="qrcode-fullscreen-hint">
+              <i data-lucide="camera" class="hint-camera-icon"></i>
+              <span>{lang === 'ta' ? 'தொடர்பை சேமிக்க போன் கேமராவை காட்டவும்' : 'Point phone camera at QR Code to save contact'}</span>
+            </p>
+          </div>
+
+          <div class="company-contact-footer-action">
+            <button id="info-modal-save-vcard-btn" class="save-vcard-button">
+              <i data-lucide="user-plus" class="vcard-btn-icon"></i>
+              <span>{lang === 'ta' ? 'சேமி (.vcf)' : 'Save Contact (.vcf)'}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  {/* Full-Screen Easy-Scan QR Code Modal Overlay */}
-  <div class="modal-overlay hidden" id="vcard-qrcode-fullscreen-modal" aria-hidden="true" role="dialog">
-    <div class="modal-container qrcode-fullscreen-container">
-      <button class="modal-close" id="close-vcard-qrcode-modal" aria-label="Close">&times;</button>
-      
-      <div class="qrcode-fullscreen-header">
-        <img id="fullscreen-qrcode-logo" src="/icons/icon-192.png" alt="" class="qrcode-fullscreen-logo" />
-        <div class="qrcode-fullscreen-header-info">
-          <div class="qrcode-fullscreen-title-row">
-            <h3 id="fullscreen-qrcode-company">Company Name</h3>
-            <span class="company-contact-badge">{SITE.title}</span>
-          </div>
-          <p id="fullscreen-qrcode-tagline" class="qrcode-fullscreen-tagline"></p>
+  {/* Logo Preview Popup Modal */}
+  <div class="modal-overlay hidden" id="logo-preview-modal" aria-hidden="true" role="dialog">
+    <div class="modal-container logo-preview-container">
+      <button class="modal-close" id="close-logo-preview-modal" aria-label="Close">&times;</button>
+      <div class="logo-preview-content">
+        <div class="logo-preview-frame">
+          <img id="logo-preview-img" src="" alt="Company Logo" />
         </div>
-      </div>
-
-      <div class="qrcode-fullscreen-body">
-        <div class="qrcode-image-frame">
-          <img id="fullscreen-qrcode-img" src="" alt="Contact vCard QR Code" width="280" height="280" />
-        </div>
-        <p class="qrcode-fullscreen-hint">
-          <i data-lucide="camera" class="hint-camera-icon"></i>
-          <span>{lang === 'ta' ? 'தொடர்பை சேமிக்க போன் கேமராவை காட்டவும்' : 'Point phone camera at QR Code to save contact'}</span>
-        </p>
+        <h3 id="logo-preview-title" class="logo-preview-title"></h3>
       </div>
     </div>
   </div>
@@ -778,10 +749,81 @@ const translateHours = (hours: string, currentLang: 'en' | 'ta') => {
     <QuoteModal lang={lang} />
   )}
   
+  {/* Dedicated Company Products Modal */}
+  <div class="modal-overlay hidden" id="company-products-modal" aria-hidden="true" role="dialog">
+    <div class="modal-container company-products-container">
+      <button class="modal-close" id="close-company-products-modal" aria-label="Close">&times;</button>
+      
+      <div class="company-products-header">
+        <img id="products-modal-company-logo" src="/icons/icon-192.png" alt="" class="company-products-logo" />
+        <div class="company-products-header-meta">
+          <h2 id="products-modal-company-name">Company Name</h2>
+          <span id="products-modal-count-badge" class="products-count-badge">0 Products</span>
+        </div>
+      </div>
+
+      <div class="company-products-body">
+        <div class="compact-products-list" id="compact-products-list"></div>
+        <div class="products-empty-state hidden" id="products-empty-state">
+          <i data-lucide="package-open" class="empty-products-icon"></i>
+          <span>{lang === 'ta' ? 'தயாரிப்புகள் ஏதும் இல்லை' : 'No products available for this workshop.'}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Worker Tip / Appreciation Modal */}
+  <div class="modal-overlay hidden" id="worker-tip-modal" aria-hidden="true" role="dialog">
+    <div class="modal-container worker-tip-container">
+      <button class="modal-close" id="close-worker-tip-modal" aria-label="Close">&times;</button>
+      
+      <div class="worker-tip-header">
+        <img id="tip-modal-photo" src="/icons/icon-192.png" alt="" class="worker-tip-photo" />
+        <div class="worker-tip-header-info">
+          <h2 id="tip-modal-name">Specialist Name</h2>
+          <p id="tip-modal-role" class="worker-tip-role"></p>
+        </div>
+      </div>
+
+      <div class="worker-tip-body">
+        <p class="tip-subtitle">{lang === 'ta' ? 'கைவினைஞரின் சிறப்பான சேவையைப் பாராட்டுங்கள்' : 'Appreciate this specialist for their exceptional craft'}</p>
+
+        <div class="tip-amounts-grid">
+          <button class="tip-amount-btn" data-amount="50">₹50</button>
+          <button class="tip-amount-btn active" data-amount="100">₹100</button>
+          <button class="tip-amount-btn" data-amount="200">₹200</button>
+          <button class="tip-amount-btn" data-amount="500">₹500</button>
+        </div>
+
+        <div class="worker-tip-qrcode-wrap">
+          <div class="qrcode-image-frame">
+            <img id="tip-modal-qrcode-img" src="" alt="UPI Tip QR Code" width="180" height="180" />
+          </div>
+          <p class="qrcode-fullscreen-hint">
+            <i data-lucide="camera" class="hint-camera-icon"></i>
+            <span>{lang === 'ta' ? 'பரிசு வழங்க GPay / PhonePe / Paytm செயலியில் ஸ்கேன் செய்யவும்' : 'Scan with GPay, PhonePe or Paytm to send tip'}</span>
+          </p>
+        </div>
+
+        <div class="company-contact-footer-action">
+          <a id="tip-modal-pay-link" href="#" target="_blank" rel="noopener noreferrer" class="save-vcard-button worker-pay-upi-btn">
+            <i data-lucide="heart" class="vcard-btn-icon"></i>
+            <span id="tip-modal-pay-text">{lang === 'ta' ? 'UPI மூலம் பாராட்டுங்கள் (₹100)' : 'Send Tip via UPI (₹100)'}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script is:inline src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script is:inline define:vars={{ supabaseUrl: PARAMS.supabase_url, supabaseAnonKey: PARAMS.supabase_anon_key }}>
+  <script is:inline define:vars={{ supabaseUrl: PARAMS.supabase_url, supabaseAnonKey: PARAMS.supabase_anon_key, companyProductsJson: JSON.stringify(companyProductsMap) }}>
     window.SUPABASE_URL = supabaseUrl;
     window.SUPABASE_ANON_KEY = supabaseAnonKey;
+    try {
+      window.__companyProducts = JSON.parse(companyProductsJson || '{}');
+    } catch (e) {
+      window.__companyProducts = {};
+    }
   </script>
   <script is:inline src={`/js/lucide.min.js?v=${ASSET_VER}`}></script>
   <script is:inline src={`/js/hammer.min.js?v=${ASSET_VER}`}></script>

@@ -778,8 +778,30 @@ body {
   font-size: 0.8rem;
 }
 
+@keyframes starTwinkle {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 0px rgba(251, 191, 36, 0));
+  }
+  20% {
+    transform: scale(1.22) rotate(12deg);
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
+  }
+  40% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 0px rgba(251, 191, 36, 0));
+  }
+}
+
 .compact-btn.btn-rating-action {
   color: #fbbf24;
+}
+
+.compact-btn.btn-rating-action .compact-btn-icon {
+  color: #fbbf24;
+  fill: #fbbf24;
+  animation: starTwinkle 2.8s infinite ease-in-out;
+  transform-origin: center;
 }
 
 .compact-btn.btn-rating-action:hover {
@@ -792,6 +814,14 @@ body {
 
 .compact-btn.btn-products:hover {
   color: var(--accent-color);
+}
+
+.compact-btn.btn-company-info {
+  color: #ffffff;
+}
+
+.compact-btn.btn-company-info:hover {
+  color: #38bdf8;
 }
 
 .service-card.filter-hidden {
@@ -1009,18 +1039,40 @@ body {
 }
 
 .shop-card-logo {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
   border: 2px solid var(--accent-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  object-fit: cover;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.shop-card-logo:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
 }
 
 .shop-card-titles h2 {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.2;
   color: #fff;
   margin: 2px 0;
+  letter-spacing: 0.2px;
+}
+
+@media (max-width: 480px) {
+  .shop-card-logo {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+  }
+  .shop-card-titles h2 {
+    font-size: 1.25rem;
+  }
 }
 
 .shop-tagline {
@@ -1029,25 +1081,59 @@ body {
 }
 
 .shop-hours-box {
-  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 6px 10px;
+  margin-top: 8px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shop-hours-box:hover {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .shop-hours-box:active {
-  opacity: 0.8;
+  transform: scale(0.99);
 }
 
 .shop-hours-summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+}
+
+.hours-summary-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.hours-summary-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 7px;
+  border-radius: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 170px;
 }
 
 .hours-expand-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: var(--text-muted);
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
 .shop-hours-box.is-expanded .hours-expand-icon {
@@ -1064,34 +1150,39 @@ body {
 .shop-hours-box.is-expanded .shop-hours-details {
   max-height: 300px;
   opacity: 1;
-  margin-top: 10px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
 .shop-hours-title {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
+  gap: 5px;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: var(--accent-color);
+  white-space: nowrap;
 }
 
 .hours-box-icon {
   width: 13px;
   height: 13px;
+  flex-shrink: 0;
 }
 
 .shop-hours-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 6px 8px;
+  gap: 4px 6px;
 }
 
 @media (max-width: 425px) {
   .shop-hours-grid {
     grid-template-columns: 1fr;
+    gap: 4px;
   }
 }
 
@@ -1101,9 +1192,9 @@ body {
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 5px 8px;
-  font-size: 0.7rem;
+  border-radius: 6px;
+  padding: 4px 7px;
+  font-size: 0.68rem;
   gap: 4px;
 }
 
@@ -1111,36 +1202,41 @@ body {
   color: #cbd5e1;
   font-weight: 600;
   white-space: nowrap;
+  font-size: 0.68rem;
 }
 
 .hours-time {
   color: #f8fafc;
   font-weight: 700;
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   text-align: right;
 }
 
 .hours-row.is-halfday {
-  border-color: var(--accent-glow);
-  background: rgba(255, 159, 28, 0.08);
+  border-color: rgba(245, 158, 11, 0.25);
+  background: rgba(245, 158, 11, 0.1);
 }
 
 .hours-row.is-halfday .hours-days {
-  color: var(--accent-color);
+  color: #fbbf24;
+}
+
+.hours-row.is-halfday .hours-time {
+  color: #fef08a;
 }
 
 .hours-row.is-holiday {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(244, 63, 94, 0.1);
+  border-color: rgba(244, 63, 94, 0.25);
 }
 
 .hours-row.is-holiday .hours-days {
-  color: #fca5a5;
+  color: #f43f5e;
   font-weight: 700;
 }
 
 .hours-row.is-holiday .hours-time {
-  color: #fecaca;
+  color: #fca5a5;
   font-weight: 600;
 }
 
@@ -1758,15 +1854,15 @@ body {
 
 /* Working hours closed notice */
 .hours-notice-container {
-  max-width: 360px;
+  max-width: 350px;
   text-align: center;
-  padding-top: 28px;
+  padding: 20px 18px;
 }
 
 .hours-notice-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 14px;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 10px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1776,31 +1872,31 @@ body {
 }
 
 .hours-notice-icon .hours-notice-clock {
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   color: var(--accent-color);
 }
 
 .hours-notice-list {
   list-style: none;
-  padding: 4px 0;
-  margin: 0 0 14px;
+  padding: 2px 0;
+  margin: 0 0 10px;
 }
 
 .hours-notice-list li {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 10px;
+  gap: 10px;
+  padding: 7px 12px;
+  border-radius: 8px;
   background: var(--bg-tertiary);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
 }
 
 .hours-notice-list li + li {
-  margin-top: 6px;
+  margin-top: 5px;
 }
 
 .hours-notice-list li strong {
@@ -1810,9 +1906,9 @@ body {
 }
 
 .hours-notice-hint {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .hours-notice-actions {
@@ -2042,13 +2138,16 @@ body {
 }
 
 .shorts-scroll .worker-card .worker-info-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   cursor: pointer;
 }
 
 .shorts-scroll .worker-card .worker-info-btn:hover {
-  border-color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .shorts-scroll .worker-card .worker-info-btn:active {
@@ -2057,14 +2156,22 @@ body {
 
 /* Worker info expanded state */
 .shorts-scroll .worker-card .worker-info {
-  width: 100%;
-  padding: 18px;
-  z-index: 2;
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  padding: 1rem 8rem 4rem 1.6rem;
+  z-index: 5;
   max-height: 0;
   overflow: hidden;
   visibility: hidden;
   opacity: 0;
-  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-sizing: border-box;
+  word-break: break-word;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
 
 .shorts-scroll .worker-card .worker-info .worker-header-meta,
@@ -3888,10 +3995,10 @@ a.social-handle-item:hover {
 
 /* Company Contact Modal & vCard Generator Styles - Full Frame Width & Single Column */
 .company-contact-container {
-  width: 100%;
-  max-width: 100%;
-  padding: 20px;
-  border-radius: 20px;
+  max-width: 420px;
+  width: min(420px, calc(100vw - 28px));
+  padding: 22px 20px;
+  border-radius: 22px;
 }
 
 .company-contact-header {
@@ -3931,18 +4038,6 @@ a.social-handle-item:hover {
   line-height: 1.2;
 }
 
-.company-contact-badge {
-  font-size: 0.6rem;
-  font-weight: 700;
-  background: var(--accent-glow);
-  color: var(--accent-color);
-  border: 1px solid var(--accent-color);
-  padding: 2px 8px;
-  border-radius: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
 .company-contact-tagline {
   font-size: 0.75rem;
   color: var(--text-secondary);
@@ -3952,11 +4047,12 @@ a.social-handle-item:hover {
   text-overflow: ellipsis;
 }
 
-.company-contact-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-  margin-bottom: 16px;
+.company-contact-qrcode-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0 16px;
 }
 
 .contact-option-card {
@@ -4168,4 +4264,506 @@ a.social-handle-item:hover {
   width: 16px;
   height: 16px;
   color: var(--accent-color);
+}
+
+/* Company Info Modal Styles */
+.company-info-modal-container {
+  max-width: 420px;
+  width: min(420px, calc(100vw - 28px));
+  padding: 22px 20px;
+  border-radius: 20px;
+}
+
+.company-info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.company-info-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.company-info-header-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.info-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.info-title-row h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.company-info-tagline {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.company-info-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.info-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--accent-color);
+  margin-bottom: 8px;
+}
+
+.info-section-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--accent-color);
+}
+
+.info-description-text {
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.info-hours-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.info-contact-item:hover {
+  border-color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.info-contact-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+/* Logo Preview Popup Modal Styles */
+.logo-preview-container {
+  max-width: 360px;
+  width: min(360px, calc(100vw - 32px));
+  padding: 24px 20px;
+  border-radius: 24px;
+  text-align: center;
+}
+
+.logo-preview-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo-preview-frame {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  padding: 6px;
+  background: var(--bg-tertiary);
+  border: 3px solid var(--accent-color);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-preview-frame img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.logo-preview-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Dedicated Company Products Modal Styles */
+.company-products-container {
+  max-width: 440px;
+  width: min(440px, calc(100vw - 28px));
+  padding: 22px 20px;
+  border-radius: 22px;
+}
+
+.company-products-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.company-products-logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-color);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.company-products-header-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.company-products-header-meta h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.products-count-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  background: var(--accent-glow);
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-top: 2px;
+  border: 1px solid var(--accent-color);
+}
+
+.company-products-body {
+  padding-top: 14px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.compact-products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.compact-product-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  transition: all 0.22s ease;
+}
+
+.compact-product-item:hover {
+  border-color: var(--accent-color);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.compact-product-thumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+}
+
+.compact-product-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.compact-product-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compact-product-rate {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.rate-tag-icon {
+  width: 13px;
+  height: 13px;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.compact-product-open-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: var(--accent-glow);
+  color: var(--accent-color);
+  border: 1px solid var(--accent-color);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.compact-product-open-btn:hover {
+  background: var(--accent-color);
+  color: #0f172a;
+}
+
+.open-btn-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.products-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 10px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.empty-products-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--text-tertiary);
+}
+
+/* Worker Tip / Appreciation Modal Styles */
+.worker-tip-container {
+  max-width: 400px;
+  width: min(400px, calc(100vw - 28px));
+  padding: 22px 20px;
+  border-radius: 22px;
+}
+
+.worker-tip-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.worker-tip-photo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent-color);
+  flex-shrink: 0;
+}
+
+.worker-tip-header-info h2 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.worker-tip-role {
+  font-size: 0.78rem;
+  color: var(--accent-color);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.worker-tip-body {
+  padding-top: 14px;
+}
+
+.tip-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.tip-amounts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tip-amount-btn {
+  padding: 8px 0;
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.tip-amount-btn.active,
+.tip-amount-btn:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.worker-tip-qrcode-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 14px;
+}
+
+.worker-pay-upi-btn {
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes heartPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(239, 68, 68, 0));
+  }
+  14% {
+    transform: scale(1.24);
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.75));
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.14);
+    filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.5));
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+.worker-tip-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #ef4444 !important;
+}
+
+.worker-tip-btn:hover {
+  background: transparent !important;
+  color: #f87171 !important;
+}
+
+.worker-tip-icon {
+  color: #ef4444;
+  fill: none;
+  stroke: #ef4444;
+  stroke-width: 2.2px;
+  animation: heartPulse 2.4s infinite ease-in-out;
+  transform-origin: center;
+}
+
+.worker-tip-btn:hover .worker-tip-icon {
+  color: #f87171;
+  fill: rgba(239, 68, 68, 0.25);
+  stroke: #f87171;
+}
+
+.worker-compact-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  position: absolute;
+  right: 18px;
+  bottom: 90px;
+  z-index: 10;
+}
+
+.form-legal-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 8px;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.legal-disclaimer-icon {
+  width: 16px;
+  height: 16px;
+  color: #f59e0b;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
