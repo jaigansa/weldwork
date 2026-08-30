@@ -1,7 +1,7 @@
 ---
 import { SITE } from '../config';
 interface Props {
-  activeScreen: 'home' | 'catalogue' | 'teams';
+  activeScreen: 'home' | 'catalogue' | 'teams' | 'about';
 }
 const { activeScreen } = Astro.props;
 const lang = Astro.url.pathname.startsWith('/ta') ? 'ta' : 'en';
